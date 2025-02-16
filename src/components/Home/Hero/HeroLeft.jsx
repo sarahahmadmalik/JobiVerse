@@ -14,7 +14,7 @@ const HeroLeft = () => {
   return (
     <div className="text-center !py-[2rem] md:py-12 md:px-9 px-4 md:text-left z-40">
       {/* Heading */}
-      <h1 className="sm:text-3xl text-2xl lg:text-5xl font-bold text-gray-900 leading-tight">
+      <h1 className="text-3xl lg:text-5xl font-bold text-gray-900 leading-tight">
         {heroContent.title}{" "}
         <span className="text-colors-primary my-2 md:block">
           {heroContent.highlightedText}
