@@ -8,7 +8,9 @@ const Input = ({ label, ...props }) => {
       )}
       <input
         {...props}
-        className="w-full px-4 py-2 border border-gray-300 rounded-full text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full px-[24px] py-[12px] border border-gray-300 rounded-[12px] text-gray-800 placeholder-gray-400 
+                     focus:outline-none focus:ring-1 focus:ring-colors-primary focus:border-colors-primary 
+                     hover:border-gray-400 transition-all duration-200 ease-in-out"
       />
     </div>
   );
