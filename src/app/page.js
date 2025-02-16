@@ -5,6 +5,7 @@ import Navbar from "@/components/layout/Header";
 import MaxWidth from "@/components/layout/MaxWidth";
 import Footer from "@/components/layout/Footer";
 import CareerCTA from "@/components/Home/CallToAction/CallToAction";
+import Testimonials from "@/components/Home/Testimonials/Testimonials";
 
 export default function Home() {
   return (
@@ -15,6 +16,7 @@ export default function Home() {
         <Features />
         <StepByStep />
         <CareerCTA />
+        <Testimonials />
         <Footer />
       </MaxWidth>
     </>

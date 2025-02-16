@@ -6,7 +6,8 @@ body {
   font-family: var(--font-poppins), sans-serif;
 }
 
-body, html {
+body,
+html {
   height: 100% !important;
   width: 100%;
 }
@@ -20,7 +21,6 @@ body, html {
   mask-size: cover;
 }
 
-
 /* .rhombus-shape::before {
   content: "";
   position: absolute;
@@ -31,3 +31,30 @@ body, html {
   clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
   z-index: -1;
 } */
+
+.swiper-wrapper {
+  max-width: 600px !important;
+  display: flex !important;
+  justify-items: center !important;
+}
+
+.swiper-button-prev,
+.swiper-button-next {
+  color: #6a42ff !important; /* Change this to your preferred color */
+}
+
+@media (max-width: 640px) {
+  /* Tailwind 'sm' breakpoint */
+  .swiper-button-prev::after,
+  .swiper-button-next::after {
+    font-size: 25px !important; /* Hide arrows */
+  }
+
+  .swiper-button-prev::after{
+    margin-left: -33px;
+  }
+
+  .swiper-button-next::after{
+    margin-right: -33px;
+  }
+}

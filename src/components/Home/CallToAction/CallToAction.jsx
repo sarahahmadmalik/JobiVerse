@@ -4,7 +4,7 @@ import Button from "@/components/ui/Button";
 const CareerCTA = () => {
   return (
     <section
-      className="relative w-full mb-[3rem] py-12 flex flex-col items-center justify-center h-[290px] overflow-hidden text-center"
+      className="relative w-full py-12 flex flex-col items-center justify-center h-[290px] overflow-hidden text-center"
       style={{
         background:
           "radial-gradient(50% 50% at 50% 50%, rgba(176, 163, 255, 0.4) 0%, rgba(94, 73, 217, 0.4) 58.17%, rgba(58, 31, 218, 0.4) 100%)",
