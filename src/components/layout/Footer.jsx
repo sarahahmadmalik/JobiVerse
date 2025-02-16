@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Button from "../ui/Button";
 import Link from "next/link";
+import { Send } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -60,8 +61,10 @@ const Footer = () => {
             height={20}
             className="w-5 h-5 absolute top-13"
           />
-          <Button className=" text-white font-[400] text-sm transition">
-            Subscribe
+          {/* Responsive Subscribe Button */}
+          <Button className="text-white  font-[400] text-sm transition flex items-center !px-3  sm:gap-2">
+            <span className="hidden sm:block">Subscribe</span>
+            <Send className="w-5 h-5 sm:hidden" />
           </Button>
         </div>
 

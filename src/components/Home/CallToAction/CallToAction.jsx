@@ -18,7 +18,7 @@ const CareerCTA = () => {
           alt="Background Decoration"
           width={320}
           height={320}
-          className="absolute top-[-50px] left-[-50px] md:top-[-50px] md:-left-5 opacity-40"
+          className="absolute h-[200px] w-[200px] md:h-[500px] md:w-[320px] top-[-50px] left-[-50px] md:top-[-50px] md:-left-5 opacity-40"
         />
 
         {/* Bottom Right Icon */}
@@ -27,7 +27,7 @@ const CareerCTA = () => {
           alt="Background Decoration"
           width={320}
           height={320}
-          className="absolute bottom-[-50px] right-[-50px] md:bottom-[-93px] md:right-0 opacity-40"
+          className="absolute h-[200px] w-[200px] md:h-[500px] md:w-[320px] bottom-[-50px] right-[-50px] md:bottom-[-93px] md:right-0 opacity-40"
         />
       </div>
 
