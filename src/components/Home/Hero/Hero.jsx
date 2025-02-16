@@ -5,7 +5,7 @@ import MaxWidth from "@/components/layout/MaxWidth";
 const HeroSection = () => {
   return (
     <section className="relative w-full bg-white">
-      <div className="flex  flex-col md:flex-row w-full justify-center items-start">
+      <div className="flex overflow-hidden md:overflow-visible flex-row w-full justify-center items-start">
         <HeroLeft />
         <HeroRight />
       </div>

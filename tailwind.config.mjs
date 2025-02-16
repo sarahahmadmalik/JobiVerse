@@ -8,6 +8,7 @@ export default {
   theme: {
     extend: {
       screens: {
+        xs: "400px",
         "2xl": "1536px",
         "3xl": "1920px", // Added 3xl for larger screens
       },
@@ -16,7 +17,7 @@ export default {
           primary: "#5E49D9",
           secondary: "#ffffff",
           textPrimary: "#161819",
-          textSecondary: "#999999"
+          textSecondary: "#999999",
         },
         backgroundImage: {
           "gradient-primary":

@@ -6,6 +6,11 @@ body {
   font-family: var(--font-poppins), sans-serif;
 }
 
+body, html {
+  height: 100% !important;
+  width: 100%;
+}
+
 .rhombus-shape {
   position: relative;
   /* Mask image instead of clip-path */
