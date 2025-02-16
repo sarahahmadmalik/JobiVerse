@@ -50,7 +50,7 @@ const Footer = () => {
           <input
             type="email"
             placeholder="Enter your email address"
-            className="flex-1 pl-6 text-[14px]  bg-transparent font-[300] outline-none text-white placeholder-gray-400"
+            className="flex-1 pl-6 text-[14px] sm:text-[16px]  bg-transparent font-[300] outline-none text-white placeholder-gray-400"
           />
 
           <Image

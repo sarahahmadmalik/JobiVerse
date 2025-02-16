@@ -30,9 +30,39 @@ const steps = [
 
 const StepConnector = ({ start, end }) => {
   return (
-    <div className="flex items-center justify-center my-10 -mx-[3rem]">
-      <div className="flex items-center w-[200px]">
-        {/* Left Circle */}
+    <>
+      {/* Horizontal Connector for larger screens */}
+      <div className="hidden md:flex items-center justify-center my-10 -mx-[3rem]">
+        <div className="flex items-center sm:w-[120px] lg:w-[200px]">
+          {/* Left Circle */}
+          <span
+            className="w-3 h-3 rounded-full"
+            style={{ backgroundColor: start }}
+          ></span>
+
+          {/* Dashed Line with Gradient Effect */}
+          <div
+            className="flex-1 h-[2px] mx-1"
+            style={{
+              background: `linear-gradient(to right, ${start}, ${end})`,
+              maskImage:
+                "repeating-linear-gradient(90deg, #000 0px, #000 8px, transparent 8px, transparent 16px)",
+              WebkitMaskImage:
+                "repeating-linear-gradient(90deg, #000 0px, #000 8px, transparent 8px, transparent 16px)",
+            }}
+          ></div>
+
+          {/* Right Circle */}
+          <span
+            className="w-3 h-3 rounded-full"
+            style={{ backgroundColor: end }}
+          ></span>
+        </div>
+      </div>
+
+      {/* Vertical Connector for smaller screens */}
+      <div className="md:hidden flex flex-col items-center justify-center my-4">
+        {/* Top Circle */}
         <span
           className="w-3 h-3 rounded-full"
           style={{ backgroundColor: start }}
@@ -40,23 +70,23 @@ const StepConnector = ({ start, end }) => {
 
         {/* Dashed Line with Gradient Effect */}
         <div
-          className="flex-1 h-[2px] mx-1"
+          className="w-[2px] h-[50px] my-1"
           style={{
-            background: `linear-gradient(to right, ${start}, ${end})`,
+            background: `linear-gradient(to bottom, ${start}, ${end})`,
             maskImage:
-              "repeating-linear-gradient(90deg, #000 0px, #000 8px, transparent 8px, transparent 16px)",
+              "repeating-linear-gradient(180deg, #000 0px, #000 8px, transparent 8px, transparent 16px)",
             WebkitMaskImage:
-              "repeating-linear-gradient(90deg, #000 0px, #000 8px, transparent 8px, transparent 16px)",
+              "repeating-linear-gradient(180deg, #000 0px, #000 8px, transparent 8px, transparent 16px)",
           }}
         ></div>
 
-        {/* Right Circle */}
+        {/* Bottom Circle */}
         <span
           className="w-3 h-3 rounded-full"
           style={{ backgroundColor: end }}
         ></span>
       </div>
-    </div>
+    </>
   );
 };
 
@@ -68,7 +98,7 @@ const StepItem = ({ title, description, image, bgColor }) => (
       <Image src={image} alt={title} width={32} height={32} />
     </div>
     <h3 className="mt-4 font-[500] text-lg">{title}</h3>
-    <p className="text-colors-textSecondary text-sm mt-2">{description}</p>
+    <p className="text-colors-textSecondary text-sm mt-2 w-[170px] lg:w-auto">{description}</p>
   </div>
 );
 
@@ -81,7 +111,7 @@ const StepByStep = () => {
       </h1>
       <div className="flex flex-col md:flex-row justify-center w-full items-center my-[5rem]">
         {steps.map((step, index) => (
-          <div key={step.id} className="flex items-start">
+          <div key={step.id} className="flex md:flex-row flex-col md:items-start">
             <StepItem {...step} />
             {index < steps.length - 1 && (
               <StepConnector start={step.color} end={steps[index + 1].color} />
