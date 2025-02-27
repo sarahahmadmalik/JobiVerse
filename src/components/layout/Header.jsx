@@ -85,9 +85,11 @@ const Navbar = () => {
           >
             Sign in
           </Link>
-          <Button className="px-[24px] hidden sm:flex py-[12px] text-[16px] font-medium rounded-[12px] bg-colors-primary hover:bg-backgroundImage-gradient-primary transition-all duration-300">
-            Register
-          </Button>
+          <Link href="/register">
+            <Button className="px-[24px] hidden sm:flex py-[12px] text-[16px] font-medium rounded-[12px] bg-colors-primary hover:bg-backgroundImage-gradient-primary transition-all duration-300">
+              Register
+            </Button>
+          </Link>
 
           <motion.button
             className="lg:hidden text-colors-primary md:text-white focus:outline-none"
