@@ -68,3 +68,23 @@ html {
     margin-right: -33px;
   }
 }
+
+.upload-area {
+  border-radius: 12px;
+  text-align: center;
+  background-color: transparent;
+  position: relative;
+}
+
+.upload-area::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 12px;
+  background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='12' ry='12' stroke='%23B0A3FF' stroke-width='2' stroke-dasharray='6, 9' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+  pointer-events: none;
+  z-index: 1;
+}

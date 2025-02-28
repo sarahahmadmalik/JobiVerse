@@ -6,8 +6,10 @@ import Dropdown from "@/components/ui/Dropdown";
 import Spinner from "@/components/ui/Spinner";
 import Toast from "@/components/ui/Toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { useOnboarding } from "@/contexts/OnBoardingContext/OnBoardingContext";
 
 const StepTwo = () => {
+  const { nextStep } = useOnboarding();
   const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastConfig, setToastConfig] = useState({
@@ -37,11 +39,15 @@ const StepTwo = () => {
       //   message: "Something went wrong. Please try again.",
       // });
       // setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+        nextStep({});
+      }, 2000);
     }, 2000);
   };
 
   return (
-    <div className="flex gap-3 w-full max-w-[750px] min-h-[450px] flex-col items-center justify-center bg-white px-4 py-6 sm:px-6 md:px-8 lg:px-10 rounded-[24px] shadow-[0px_8px_18px_0px_rgba(19,17,28,0.12)]">
+    <div className="flex gap-3 w-full max-w-[637px] min-h-[450px] flex-col items-center justify-center bg-white px-4 py-6 sm:px-6 md:px-8 lg:px-10 rounded-[24px] shadow-[0px_8px_18px_0px_rgba(19,17,28,0.12)]">
       <AnimatePresence>
         {showToast && (
           <motion.div
