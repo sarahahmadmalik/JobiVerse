@@ -6,6 +6,16 @@ body {
   font-family: var(--font-poppins), sans-serif;
 }
 
+.toast-font {
+  font-family: var(--font-inter), sans-serif;
+}
+
+.subtle-shadow:hover {
+  -webkit-box-shadow: 0px 7px 54px 7px rgba(207, 207, 207, 1) !important;
+  -moz-box-shadow: 0px 7px 54px 7px rgba(207, 207, 207, 1) !important;
+  box-shadow: 0px 7px 54px 7px rgba(207, 207, 207, 1) !important;
+}
+
 body,
 html {
   height: 100% !important;
@@ -50,11 +60,11 @@ html {
     font-size: 25px !important; /* Hide arrows */
   }
 
-  .swiper-button-prev::after{
+  .swiper-button-prev::after {
     margin-left: -33px;
   }
 
-  .swiper-button-next::after{
+  .swiper-button-next::after {
     margin-right: -33px;
   }
 }
