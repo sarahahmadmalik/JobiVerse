@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import MobileNav from "./MobileNav";
 import { Menu, X } from "lucide-react";
 import { motion } from "framer-motion";
-import Button from "@/components/ui/Button";
+import Button from "@/components/ui/button";
 
 const Navbar = () => {
   const [scrolling, setScrolling] = useState(false);

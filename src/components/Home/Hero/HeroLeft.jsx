@@ -1,5 +1,5 @@
 import { ChevronRight } from "lucide-react";
-import Button from "@/components/ui/Button";
+import Button from "@/components/ui/button";
 import StatsSection from "@/components/Home/Hero/Stats";
 
 const heroContent = {

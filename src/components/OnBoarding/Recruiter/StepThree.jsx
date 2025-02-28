@@ -2,18 +2,15 @@
 
 import { useState, useEffect, useRef } from "react";
 import Button from "@/components/ui/button";
-import Input from "@/components/ui/Input";
-import Spinner from "@/components/ui/Spinner";
-import Toast from "@/components/ui/Toast";
+import Input from "@/components/ui/input";
+import Spinner from "@/components/ui/spinner";
+import Toast from "@/components/ui/toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { useOnboarding } from "@/contexts/OnBoardingContext/OnBoardingContext";
+import { useOnboarding } from "@/contexts/OnboardingContext/OnboardingContext";
 import Image from "next/image";
 
 const StepThree = () => {
-  useEffect(() => {
-    console.log("StepThree Mounted!");
-  }, []);
-
+  const { nextStep } = useOnboarding();
   const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastConfig, setToastConfig] = useState({
@@ -37,9 +34,14 @@ const StepThree = () => {
       setToastConfig({
         type: "success",
         title: "Success!",
-        message: "Your company details have been saved successfully.",
+        message: "Your Branding details have been saved successfully.",
       });
       setShowToast(true);
+
+      setTimeout(() => {
+        setShowToast(false);
+        nextStep({});
+      }, 2000);
     }, 2000);
   };
 
@@ -149,7 +151,7 @@ const StepThree = () => {
           {/* File Upload Area */}
           {uploadedFiles.length === 0 && (
             <div
-              className={`border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer ${
+              className={`upload-area rounded-lg p-4 text-center cursor-pointer ${
                 isDragging ? "bg-gray-50" : ""
               }`}
               onDragOver={handleDragOver}

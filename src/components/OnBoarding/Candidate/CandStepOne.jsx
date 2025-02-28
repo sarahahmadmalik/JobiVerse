@@ -1,5 +1,5 @@
-import Button from "@/components/ui/Button";
-import { useOnboarding } from "@/contexts/OnBoardingContext/OnBoardingContext";
+import Button from "@/components/ui/button";
+import { useOnboarding } from "@/contexts/OnboardingContext/OnboardingContext";
 
 const CandStepOne = () => {
   const { nextStep } = useOnboarding();

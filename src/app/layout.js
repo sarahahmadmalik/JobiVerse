@@ -1,4 +1,8 @@
+"use client";
+
 import { Poppins, Inter } from "next/font/google";
+import { OnboardingProvider } from "@/contexts/OnboardingContext/OnboardingContext";
+import { metadata } from "@/app/layout.server";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -13,19 +17,14 @@ const inter = Inter({
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
 
-export const metadata = {
-  title: "JobiVerse",
-  description: "Making Job Search Simple, Making Hiring Smart",
-};
-
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href="/logo-small.png" sizes="any" type="img/png" />
+        <link rel="icon" href="/logo-small.png" sizes="any" type="image/png" />
       </head>
       <body className={`${poppins.variable} ${inter.variable} antialiased`}>
-        {children}
+        <OnboardingProvider>{children}</OnboardingProvider>
       </body>
     </html>
   );

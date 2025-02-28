@@ -1,12 +1,12 @@
 "use client";
 import { useState } from "react";
 import Button from "@/components/ui/button";
-import Input from "@/components/ui/Input";
-import Dropdown from "@/components/ui/Dropdown";
-import Spinner from "@/components/ui/Spinner";
-import Toast from "@/components/ui/Toast";
+import Input from "@/components/ui/input";
+import Dropdown from "@/components/ui/dropdown";
+import Spinner from "@/components/ui/spinner";
+import Toast from "@/components/ui/toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { useOnboarding } from "@/contexts/OnBoardingContext/OnBoardingContext";
+import { useOnboarding } from "@/contexts/OnboardingContext/OnboardingContext";
 
 const StepTwo = () => {
   const { nextStep } = useOnboarding();
