@@ -3,20 +3,18 @@
 import { useState } from "react";
 import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
-import Select from "@/components/ui/select";
 import Toast from "@/components/ui/toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { useOnboarding } from "@/contexts/OnboardingContext/OnboardingContext";
 import Spinner from "@/components/ui/spinner";
+import { Link } from "lucide-react";
 
-const CandStepSix = () => {
+const StepSix = () => {
   const { nextStep } = useOnboarding();
-  const [jobPreferences, setJobPreferences] = useState({
-    jobTitle: "",
-    locations: "",
-    industry: "",
-    salary: "",
-    employmentType: [],
+  const [formData, setFormData] = useState({
+    linkedin: "",
+    portfolio: "",
+    otherLinks: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -27,16 +25,7 @@ const CandStepSix = () => {
   });
 
   const handleChange = (field, value) => {
-    setJobPreferences((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleEmploymentTypeChange = (type) => {
-    setJobPreferences((prev) => {
-      const updatedTypes = prev.employmentType.includes(type)
-        ? prev.employmentType.filter((t) => t !== type)
-        : [...prev.employmentType, type];
-      return { ...prev, employmentType: updatedTypes };
-    });
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSave = () => {
@@ -47,13 +36,13 @@ const CandStepSix = () => {
       setToastConfig({
         type: "success",
         title: "Success!",
-        message: "Your job preferences have been saved successfully.",
+        message: "Your links have been saved successfully.",
       });
       setShowToast(true);
 
       setTimeout(() => {
         setShowToast(false);
-        nextStep({ jobPreferences });
+        nextStep();
       }, 2000);
     }, 2000);
   };
@@ -79,77 +68,71 @@ const CandStepSix = () => {
       </AnimatePresence>
 
       <h2 className="text-2xl font-bold text-gray-800 text-center">
-        Your Ideal Job, Defined
+        Showcase Your Work
       </h2>
       <p className="text-gray-500 text-center mb-4">
-        Tell us what you're looking for—preferred roles, locations, and
-        industries.
+        Have a portfolio, website, or LinkedIn profile? Share the link so
+        recruiters can explore your work!
       </p>
 
-      <Input
-        label="Desired Job Title"
-        placeholder="e.g., Data Scientist, Marketing Specialist"
-        value={jobPreferences.jobTitle}
-        onChange={(e) => handleChange("jobTitle", e.target.value)}
-      />
-      <Input
-        label="Preferred Locations"
-        placeholder="e.g., New York, Remote"
-        value={jobPreferences.locations}
-        onChange={(e) => handleChange("locations", e.target.value)}
-      />
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
-        <Select
-          label="Industry"
-          value={jobPreferences.industry}
-          onChange={(e) => handleChange("industry", e.target.value)}
-        >
-          <option value="">Select</option>
-          <option value="tech">Tech</option>
-          <option value="finance">Finance</option>
-          <option value="healthcare">Healthcare</option>
-        </Select>
+      <div className="relative w-full">
         <Input
-          label="Salary Expectation (optional)"
-          placeholder="e.g., $50,000 per year"
-          value={jobPreferences.salary}
-          onChange={(e) => handleChange("salary", e.target.value)}
+          label="LinkedIn Profile"
+          placeholder="Paste your LinkedIn URL"
+          className="w-full"
+          value={formData.linkedin}
+          onChange={(e) => handleChange("linkedin", e.target.value)}
+        />
+        <Link
+          className="absolute right-4  top-[2.4rem] text-gray-500"
+          size={18}
         />
       </div>
 
-      <div className="flex flex-col w-full mt-3">
-        <label className="text-sm font-medium text-gray-700">
-          Employment Type
-        </label>
-        <div className="flex flex-wrap gap-3 mt-2">
-          {["Part Time", "Full Time", "Contract", "Temporary"].map((type) => (
-            <label key={type} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={jobPreferences.employmentType.includes(type)}
-                onChange={() => handleEmploymentTypeChange(type)}
-              />
-              {type}
-            </label>
-          ))}
-        </div>
+      <div className="relative w-full">
+        <Input
+          label="Portfolio Website"
+          className="w-full"
+          placeholder="Paste your portfolio URL"
+          value={formData.portfolio}
+          onChange={(e) => handleChange("portfolio", e.target.value)}
+        />
+        <Link
+          className="absolute right-4  top-[2.4rem] text-gray-500"
+          size={18}
+        />
       </div>
 
-      <Button
-        className={`mt-5 !font-[400] !text-[16px] flex items-center justify-center gap-3 transition-all duration-300 ${
-          isLoading ? "!shadow-none" : "subtle-shadow"
-        }`}
-        onClick={handleSave}
-        disabled={isLoading}
-      >
-        Save & Continue
-        {isLoading && (
-          <Spinner className="transition-opacity duration-300 opacity-100" />
-        )}
-      </Button>
+      <div className="relative w-full">
+        <Input
+          label="GitHub/Dribbble/Other Links"
+          className="w-full"
+          placeholder="Add more links to showcase your work"
+          value={formData.otherLinks}
+          onChange={(e) => handleChange("otherLinks", e.target.value)}
+        />
+        <Link
+          className="absolute right-4 top-[2.4rem] text-gray-500"
+          size={18}
+        />
+      </div>
+
+      <div className="w-full flex justify-end">
+        <Button
+          className={`mt-5 !font-[400] !text-[16px] flex items-center justify-center gap-3 transition-all duration-300 ${
+            isLoading ? "!shadow-none" : "subtle-shadow"
+          }`}
+          onClick={handleSave}
+          disabled={isLoading}
+        >
+          Save & Continue
+          {isLoading && (
+            <Spinner className="transition-opacity duration-300 opacity-100" />
+          )}
+        </Button>
+      </div>
     </div>
   );
 };
 
-export default CandStepSix;
+export default StepSix;

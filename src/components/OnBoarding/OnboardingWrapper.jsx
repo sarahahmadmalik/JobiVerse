@@ -8,6 +8,9 @@ import CandStepTwo from "./Candidate/CandStepTwo";
 import CandStepThree from "./Candidate/CandStepThree";
 import CandStepFour from "./Candidate/CandStepFour";
 import CandStepFive from "./Candidate/CandStepFive";
+import CandStepSix from "./Candidate/CandStepSix";
+import CandStepSeven from "./Candidate/CandStepSeven";
+import CandStepEight from "./Candidate/CandStepEight";
 
 const OnboardingWrapper = ({ role }) => {
   const { step } = useOnboarding();
@@ -24,6 +27,9 @@ const OnboardingWrapper = ({ role }) => {
     <CandStepThree />,
     <CandStepFour />,
     <CandStepFive />,
+    <CandStepSix />,
+    <CandStepSeven />,
+    <CandStepEight />,
   ];
 
   console.log(step);
