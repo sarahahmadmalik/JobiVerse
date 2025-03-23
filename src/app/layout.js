@@ -1,7 +1,7 @@
 "use client";
 
 import { Poppins, Inter } from "next/font/google";
-import { OnboardingProvider } from "@/contexts/OnboardingContext/OnboardingContext";
+import { OnboardingProvider } from "@/contexts/OnBoardingContext/OnboardingContext";
 import { metadata } from "@/app/layout.server";
 import "./globals.css";
 

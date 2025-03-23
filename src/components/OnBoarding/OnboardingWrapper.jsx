@@ -1,4 +1,4 @@
-import { useOnboarding } from "@/contexts/OnboardingContext/OnboardingContext";
+import { useOnboarding } from "@/contexts/OnBoardingContext/OnboardingContext";
 import StepOne from "@/components/OnBoarding/Recruiter/StepOne";
 import StepTwo from "@/components/OnBoarding/Recruiter/StepTwo";
 import CandStepOne from "@/components/OnBoarding/Candidate/CandStepOne";
