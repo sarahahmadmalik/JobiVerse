@@ -1,6 +1,6 @@
 "use client";
-import { OnboardingProvider } from "@/contexts/OnboardingContext/OnboardingContext";
-import OnboardingWrapper from "@/components/onboarding/OnboardingWrapper";
+import { OnboardingProvider } from "@/contexts/OnBoardingContext/OnboardingContext";
+import OnboardingWrapper from "@/components/onBoarding/OnboardingWrapper";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
