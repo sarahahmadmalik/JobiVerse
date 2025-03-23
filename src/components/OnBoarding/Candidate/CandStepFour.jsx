@@ -6,7 +6,7 @@ import Input from "@/components/ui/input";
 import Toast from "@/components/ui/toast";
 import { X, PlusCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useOnboarding } from "@/contexts/OnboardingContext/OnboardingContext";
+import { useOnboarding } from "@/contexts/OnBoardingContext/OnboardingContext";
 import Spinner from "@/components/ui/spinner";
 
 const CandStepFour = () => {

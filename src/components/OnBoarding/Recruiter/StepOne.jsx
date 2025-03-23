@@ -1,5 +1,5 @@
 import Button from "@/components/ui/button";
-import { useOnboarding } from "@/contexts/OnboardingContext/OnboardingContext";
+import { useOnboarding } from "@/contexts/OnBoardingContext/OnboardingContext";
 
 const StepOne = () => {
   const { nextStep } = useOnboarding();

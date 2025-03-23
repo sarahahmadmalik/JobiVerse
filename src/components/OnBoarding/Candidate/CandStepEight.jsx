@@ -1,4 +1,4 @@
-import { useOnboarding } from "@/contexts/OnboardingContext/OnboardingContext";
+import { useOnboarding } from "@/contexts/OnBoardingContext/OnboardingContext";
 import { CheckCircle, Pencil } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Button from "@/components/ui/button";

@@ -5,7 +5,7 @@ import Button from "@/components/ui/button";
 import Toast from "@/components/ui/toast";
 import Spinner from "@/components/ui/spinner";
 import { motion, AnimatePresence } from "framer-motion";
-import { useOnboarding } from "@/contexts/OnboardingContext/OnboardingContext";
+import { useOnboarding } from "@/contexts/OnBoardingContext/OnboardingContext";
 import InputAuto from "@/components/ui/input-auto";
 import { X } from "lucide-react";
 import { SKILLS } from "@/constants/constants";

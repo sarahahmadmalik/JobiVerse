@@ -6,8 +6,7 @@ import Dropdown from "@/components/ui/dropdown";
 import Spinner from "@/components/ui/spinner";
 import Toast from "@/components/ui/toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { useOnboarding } from "@/contexts/OnboardingContext/OnboardingContext";
-
+import { useOnboarding } from "@/contexts/OnBoardingContext/OnboardingContext";
 const CandStepTwo = () => {
   const { nextStep } = useOnboarding();
   const [loading, setLoading] = useState(false);
