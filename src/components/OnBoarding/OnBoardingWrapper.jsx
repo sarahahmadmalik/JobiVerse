@@ -4,6 +4,10 @@ import StepTwo from "@/components/OnBoarding/Recruiter/StepTwo";
 import CandStepOne from "@/components/OnBoarding/Candidate/CandStepOne";
 import StepThree from "@/components/OnBoarding/Recruiter/StepThree";
 import StepFour from "@/components/OnBoarding/Recruiter/StepFour";
+import CandStepTwo from "./Candidate/CandStepTwo";
+import CandStepThree from "./Candidate/CandStepThree";
+import CandStepFour from "./Candidate/CandStepFour";
+import CandStepFive from "./Candidate/CandStepFive";
 
 const OnboardingWrapper = ({ role }) => {
   const { step } = useOnboarding();
@@ -14,7 +18,13 @@ const OnboardingWrapper = ({ role }) => {
     <StepThree />,
     <StepFour />,
   ];
-  const candidateSteps = [<CandStepOne />];
+  const candidateSteps = [
+    <CandStepOne />,
+    <CandStepTwo />,
+    <CandStepThree />,
+    <CandStepFour />,
+    <CandStepFive />,
+  ];
 
   console.log(step);
 

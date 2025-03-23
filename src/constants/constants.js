@@ -1,0 +1,16 @@
+export const SKILLS = [
+  "Project Management",
+  "Data Analysis",
+  "Data Science",
+  "Artificial Intelligence",
+  "Machine Learning",
+  "Web Development",
+  "Mobile Development",
+  "Graphic Design",
+  "Digital Marketing",
+  "UI/UX Design",
+  "Content Writing",
+  "Search Engine Optimization (SEO)",
+  "Cyber Security",
+  "Cryptography",
+];
