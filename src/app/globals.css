@@ -88,3 +88,22 @@ html {
   pointer-events: none;
   z-index: 1;
 }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px; /* Thin scrollbar */
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* Transparent track */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db; /* Light gray color */
+  border-radius: 10px; /* Rounded corners */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8; /* Slightly darker gray on hover */
+}
