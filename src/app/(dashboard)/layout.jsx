@@ -14,18 +14,14 @@ export default function DashboardLayout({ children }) {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  // Improved path parsing function
   const getPageTitle = () => {
-    // Handle home dashboard case
-    if (pathname === "/home" || pathname === "/home/") {
+    if (pathname === "/dashboard" || pathname === "/dashboard/") {
       return "Welcome back, User!";
     }
 
-    // Extract the last segment of the path
     const segments = pathname.split('/').filter(segment => segment.trim() !== '');
     const lastSegment = segments[segments.length - 1];
 
-    // Convert to title case and replace hyphens with spaces
     return lastSegment
       .split('-')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -34,7 +30,6 @@ export default function DashboardLayout({ children }) {
 
   return (
     <div className="flex bg-[#EBEBEB] min-h-screen">
-      {/* Mobile Menu Button */}
       <div className="absolute top-5 right-4 z-50 md:hidden">
         <button
           onClick={toggleMobileMenu}
@@ -67,7 +62,6 @@ export default function DashboardLayout({ children }) {
         </button>
       </div>
 
-      {/* Mobile Sidebar */}
       <motion.div
         className="fixed inset-y-0 z-40 md:hidden overflow-hidden w-64"
         initial={{ x: "-100%" }}
@@ -79,21 +73,17 @@ export default function DashboardLayout({ children }) {
         </div>
       </motion.div>
 
-      {/* Desktop Sidebar */}
       <div className="hidden md:block">
         <Sidebar />
       </div>
 
-      {/* Main Content */}
       <div className={`flex-1 rounded-tr rounded-[24px] rounded-br bg-white my-3 flex flex-col ${isMobileMenuOpen ? "md:ml-0" : ""}`}>
-        {/* Header with dynamic title */}
         <header className="border-b border-gray-200 px-6 py-4 flex items-center">
           <h1 className="text-lg font-[500] text-colors-primary">
             {getPageTitle()}
           </h1>
         </header>
 
-        {/* Page Content */}
         <main className="p-6">{children}</main>
       </div>
     </div>

@@ -14,3 +14,13 @@ export const SKILLS = [
   "Cyber Security",
   "Cryptography",
 ];
+
+export const STATUS_PRIORITY = {
+  "Offer": 1,
+  "Interview": 2,
+  "Shortlisted": 3,
+  "Viewed": 4,
+  "Submitted": 5,
+  "Pending": 6,
+  "Rejected": 7
+};
