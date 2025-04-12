@@ -6,7 +6,7 @@ import JobCard from "./JobsCard";
 import JobFilters from "./JobsFilters";
 import Dropdown from "@/components/ui/dropdown";
 
-export default function JobsForYou({ jobs }) {
+export default function JobsForYou({ jobs, title="Jobs For You" }) {
   const [showFilters, setShowFilters] = useState(false);
   
   // Filter states
@@ -198,7 +198,7 @@ export default function JobsForYou({ jobs }) {
   return (
     <div className="w-full relative p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-lg md:text-xl font-semibold text-gray-900">Jobs For You</h1>
+        <h1 className="text-lg md:text-xl font-semibold text-gray-900">{title}</h1>
         <div className="flex items-center gap-3">
           {/* Sorting dropdown */}
           <div className="w-48">

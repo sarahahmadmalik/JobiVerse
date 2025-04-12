@@ -2,22 +2,39 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react"; // Import Lucide icons
+import { Menu, X } from "lucide-react";
 import Sidebar from "@/components/dashboard/shared/Sidebar";
-// import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 
 export default function DashboardLayout({ children }) {
-  const [collapsed, setCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  //const { data: session } = useSession();
+  const pathname = usePathname();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  // Improved path parsing function
+  const getPageTitle = () => {
+    // Handle home dashboard case
+    if (pathname === "/home" || pathname === "/home/") {
+      return "Welcome back, User!";
+    }
+
+    // Extract the last segment of the path
+    const segments = pathname.split('/').filter(segment => segment.trim() !== '');
+    const lastSegment = segments[segments.length - 1];
+
+    // Convert to title case and replace hyphens with spaces
+    return lastSegment
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
   return (
     <div className="flex bg-[#EBEBEB] min-h-screen">
-      {/* Mobile Menu Button - Only visible on mobile */}
+      {/* Mobile Menu Button */}
       <div className="absolute top-5 right-4 z-50 md:hidden">
         <button
           onClick={toggleMobileMenu}
@@ -50,9 +67,9 @@ export default function DashboardLayout({ children }) {
         </button>
       </div>
 
-      {/* Mobile Sidebar - Fixed width (same as original sidebar) */}
+      {/* Mobile Sidebar */}
       <motion.div
-        className="fixed inset-y-0 z-40 md:hidden overflow-hidden w-64" // Set fixed width (w-64)
+        className="fixed inset-y-0 z-40 md:hidden overflow-hidden w-64"
         initial={{ x: "-100%" }}
         animate={{ x: isMobileMenuOpen ? 0 : "-100%" }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
@@ -62,21 +79,17 @@ export default function DashboardLayout({ children }) {
         </div>
       </motion.div>
 
-      {/* Desktop Sidebar - Only visible on md and up */}
+      {/* Desktop Sidebar */}
       <div className="hidden md:block">
         <Sidebar />
       </div>
 
       {/* Main Content */}
-      <div
-        className={`flex-1 rounded-tr rounded-[24px] rounded-br bg-white my-3 flex flex-col ${
-          isMobileMenuOpen ? "md:ml-0" : ""
-        }`}
-      >
-        {/* Header */}
+      <div className={`flex-1 rounded-tr rounded-[24px] rounded-br bg-white my-3 flex flex-col ${isMobileMenuOpen ? "md:ml-0" : ""}`}>
+        {/* Header with dynamic title */}
         <header className="border-b border-gray-200 px-6 py-4 flex items-center">
           <h1 className="text-lg font-[500] text-colors-primary">
-            Welcome back {"User"}!
+            {getPageTitle()}
           </h1>
         </header>
 
