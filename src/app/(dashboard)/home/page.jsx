@@ -41,9 +41,27 @@ function Page() {
   ];
 
   const tasks = [
-    { text: "Meeting with recruiter from ABC", completed: false },
-    { text: "Complete Application for the XYZ Position", completed: true },
-    { text: "Meeting with recruiter from XYZ", completed: false },
+    {
+      month: "Apr",
+      day: "15",
+      title: "Meeting with recruiter from ABC",
+      time: "10:00 AM",
+      location: "Zoom Conference",
+      priority: 1
+    },
+    {
+      month: "Apr",
+      day: "16",
+      title: "Complete Application for XYZ Position",
+      time: "2:30 PM"
+    },
+    {
+      month: "Apr",
+      day: "17",
+      title: "Follow up with HR at Google",
+      time: "11:00 AM",
+      location: "Phone Call"
+    }
   ];
 
   const navigationPrevRef = useRef(null);
@@ -166,7 +184,7 @@ function Page() {
         </div>
 
         <div className="lg:w-1/3">
-          <Schedule tasks={tasks} />
+          <Schedule events={tasks} />
         </div>
       </div>
 
