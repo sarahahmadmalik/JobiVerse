@@ -1,17 +1,27 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation"; // Updated import
 
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
-  const [activeItem, setActiveItem] = useState("Dashboard");
-
-  const handleMenuItemClick = (itemName) => {
-    setActiveItem(itemName);
-  };
+  const pathname = usePathname();
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
+  };
+
+  const isActive = (path) => {
+    if (!pathname) return false;
+    
+    // Remove leading/trailing slashes and split into segments
+    const currentSegments = pathname.replace(/^\/|\/$/g, '').split('/');
+    const targetSegments = path.replace(/^\/|\/$/g, '').split('/');
+    
+    // Check if all target segments match the corresponding current segments
+    return targetSegments.every((segment, index) => 
+      currentSegments[index] === segment
+    );
   };
 
   // Updated menu items with paths
@@ -136,20 +146,19 @@ export default function Sidebar() {
               <li key={index}>
                 <Link
                   href={item.path}
-                  onClick={() => handleMenuItemClick(item.name)}
                   className={`inline-flex items-center !text-[14px] font-[400] py-2 ${
                     collapsed
                       ? "justify-center !px-2 rounded-[12px]"
                       : "px-2 rounded-[12px] !flex"
                   } ${
-                    item.name === activeItem
+                    isActive(item.path)
                       ? "bg-indigo-600 text-white"
                       : "text-colors-textPrimary hover:text-indigo-600"
                   }`}
                 >
                   <span
                     className={`flex items-center w-8 h-8 justify-center ${
-                      item.name === activeItem ? "bg-white rounded-[8px]" : ""
+                      isActive(item.path) ? "bg-white rounded-[8px]" : ""
                     }`}
                   >
                     <Image
@@ -178,20 +187,19 @@ export default function Sidebar() {
               <li key={index}>
                 <Link
                   href={item.path}
-                  onClick={() => handleMenuItemClick(item.name)}
                   className={`flex items-center !text-[14px] font-[400] py-2 ${
                     collapsed
                       ? "!inline-flex justify-center px-2"
                       : "px-2 rounded-[12px]"
                   } ${
-                    item.name === activeItem
+                    isActive(item.path)
                       ? "bg-indigo-600 text-white"
                       : "text-colors-textPrimary hover:text-indigo-600"
                   }`}
                 >
                   <span
                     className={`flex items-center w-8 h-8 justify-center ${
-                      item.name === activeItem ? "bg-white rounded-[8px]" : ""
+                      isActive(item.path) ? "bg-white rounded-[8px]" : ""
                     }`}
                   >
                     <Image
