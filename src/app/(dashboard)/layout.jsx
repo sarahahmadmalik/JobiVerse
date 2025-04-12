@@ -18,7 +18,7 @@ export default function DashboardLayout({ children }) {
   return (
     <div className="flex bg-[#EBEBEB] min-h-screen">
       {/* Mobile Menu Button - Only visible on mobile */}
-      <div className="fixed top-5 right-4 z-50 md:hidden">
+      <div className="absolute top-5 right-4 z-50 md:hidden">
         <button
           onClick={toggleMobileMenu}
           className="flex justify-center items-center w-10 h-10 bg-colors-primary rounded-[8px] p-2"

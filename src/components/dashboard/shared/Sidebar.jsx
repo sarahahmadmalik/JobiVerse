@@ -14,28 +14,53 @@ export default function Sidebar() {
     setCollapsed(!collapsed);
   };
 
-  // Updated menu items to include paths to your SVG icons
+  // Updated menu items with paths
   const menuItems = [
-    { name: "Dashboard", icon: "/assets/dash_icons/home.svg" },
-    { name: "Resume Builder", icon: "/assets/dash_icons/builder.svg" },
-    { name: "Job Listings", icon: "/assets/dash_icons/listing.svg" },
+    { name: "Home", icon: "/assets/dash_icons/home.svg", path: "/home" },
+    {
+      name: "Resume Builder",
+      icon: "/assets/dash_icons/builder.svg",
+      path: "/resume-builder",
+    },
+    {
+      name: "Job Listings",
+      icon: "/assets/dash_icons/listing.svg",
+      path: "/job-listings",
+    },
     {
       name: "Application Manager",
       icon: "/assets/dash_icons/application-manager.svg",
+      path: "/application-manager",
     },
-    { name: "Saved Jobs", icon: "/assets/dash_icons/saved-jobs.svg" },
-    { name: "Schedule", icon: "/assets/dash_icons/schedule.svg" },
-    { name: "Chats", icon: "/assets/dash_icons/chats.svg" },
+    {
+      name: "Saved Jobs",
+      icon: "/assets/dash_icons/saved-jobs.svg",
+      path: "/saved-jobs",
+    },
+    {
+      name: "Schedule",
+      icon: "/assets/dash_icons/schedule.svg",
+      path: "/schedule",
+    },
+    { name: "Chats", icon: "/assets/dash_icons/chats.svg", path: "/chats" },
   ];
 
   const generalItems = [
-    { name: "Help & Support", icon: "/assets/dash_icons/help.svg" },
-    { name: "Settings", icon: "/assets/dash_icons/settings.svg" },
+    {
+      name: "Help & Support",
+      icon: "/assets/dash_icons/help.svg",
+      path: "/help-support",
+    },
+    {
+      name: "Settings",
+      icon: "/assets/dash_icons/settings.svg",
+      path: "/settings",
+    },
   ];
 
   return (
     <div
-      className={`flex flex-col justify-between h-full lg:h-screen overflow-y-scroll  transition-all duration-300 ${
+      className={`flex flex-col z-40 justify-between h-full lg:h-screen overflow-y-scroll transition-all duration-300 ${
         collapsed ? "w-20" : "w-[250px]"
       } sticky top-0`}
     >
@@ -47,9 +72,9 @@ export default function Sidebar() {
       >
         <button
           onClick={toggleSidebar}
-          className={`absolute  ${
+          className={`absolute ${
             !collapsed ? `left-[16px] top-[15px]` : `top-[10px] left-[25px]`
-          }  text-colors-primary bg-white border border-gray-300 rounded-full p-1 transition-transform hover:bg-gray-100`}
+          } text-colors-primary bg-white border border-gray-300 rounded-full p-1 transition-transform hover:bg-gray-100`}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -86,7 +111,7 @@ export default function Sidebar() {
               </div>
             </div>
           ) : (
-            <div className="flex items-center">
+            <Link href="/home" className="flex items-center">
               <Image
                 src="/logo.png"
                 alt="Jobiverse Logo"
@@ -95,7 +120,7 @@ export default function Sidebar() {
                 priority
                 className="block"
               />
-            </div>
+            </Link>
           )}
         </div>
 
@@ -110,7 +135,7 @@ export default function Sidebar() {
             {menuItems.map((item, index) => (
               <li key={index}>
                 <Link
-                  href="#"
+                  href={item.path}
                   onClick={() => handleMenuItemClick(item.name)}
                   className={`inline-flex items-center !text-[14px] font-[400] py-2 ${
                     collapsed
@@ -124,7 +149,7 @@ export default function Sidebar() {
                 >
                   <span
                     className={`flex items-center w-8 h-8 justify-center ${
-                      item.name === activeItem ? "bg-white  rounded-[8px] " : ""
+                      item.name === activeItem ? "bg-white rounded-[8px]" : ""
                     }`}
                   >
                     <Image
@@ -152,7 +177,7 @@ export default function Sidebar() {
             {generalItems.map((item, index) => (
               <li key={index}>
                 <Link
-                  href="#"
+                  href={item.path}
                   onClick={() => handleMenuItemClick(item.name)}
                   className={`flex items-center !text-[14px] font-[400] py-2 ${
                     collapsed
@@ -166,7 +191,7 @@ export default function Sidebar() {
                 >
                   <span
                     className={`flex items-center w-8 h-8 justify-center ${
-                      item.name === activeItem ? "bg-white  rounded-[8px] " : ""
+                      item.name === activeItem ? "bg-white rounded-[8px]" : ""
                     }`}
                   >
                     <Image
@@ -213,7 +238,7 @@ export default function Sidebar() {
         </div>
         {!collapsed && (
           <Link
-            href="#"
+            href="/logout"
             className="flex items-center text-[14px] font-[400] mt-4 text-gray-500 hover:text-indigo-600 rounded-lg px-2 py-2"
           >
             <span className="inline-flex items-center justify-center w-6 h-6">
@@ -229,7 +254,7 @@ export default function Sidebar() {
         )}
         {collapsed && (
           <Link
-            href="#"
+            href="/logout"
             className="flex items-center justify-center mt-4 text-colors-textPrimary hover:text-indigo-600 rounded-lg p-2"
           >
             <span className="inline-flex items-center justify-center w-6 h-6">

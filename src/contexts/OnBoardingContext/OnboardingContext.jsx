@@ -3,7 +3,7 @@ import { createContext, useContext, useState } from "react";
 const OnboardingContext = createContext(null);
 
 export const OnboardingProvider = ({ children }) => {
-  const [step, setStep] = useState(6);
+  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({});
 
   const nextStep = (data) => {

@@ -2,10 +2,19 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check } from "lucide-react"; // Importing the tick icon from lucide-react
+import { Check } from "lucide-react";
 
-const Dropdown = ({ label, options, onChange, placeholder = "Select" }) => {
-  const [selected, setSelected] = useState(null);
+const Dropdown = ({ 
+  label, 
+  options, 
+  onChange, 
+  placeholder = "Select", 
+  value,
+  icon: IconComponent = null
+}) => {
+  const [selected, setSelected] = useState(
+    options.find(option => option.value === value) || null
+  );
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -17,7 +26,15 @@ const Dropdown = ({ label, options, onChange, placeholder = "Select" }) => {
     }
   };
 
-  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (value) {
+      const newSelected = options.find(option => option.value === value);
+      if (newSelected) {
+        setSelected(newSelected);
+      }
+    }
+  }, [value, options]);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -51,15 +68,22 @@ const Dropdown = ({ label, options, onChange, placeholder = "Select" }) => {
         <span className={selected ? "!text-gray-800" : "text-gray-400"}>
           {selected ? selected.label : placeholder}
         </span>
-        <Image
-          width={12}
-          height={12}
-          src="/assets/down.svg"
-          alt="dropdown-icon"
-          className={`transition-transform duration-300 ${
-            isOpen ? "rotate-180" : "rotate-0"
-          }`}
-        />
+        {IconComponent ? (
+          <IconComponent 
+            className="text-gray-400" 
+            size={16}
+          />
+        ) : (
+          <Image
+            width={12}
+            height={12}
+            src="/assets/down.svg"
+            alt="dropdown-icon"
+            className={`transition-transform duration-300 ${
+              isOpen ? "rotate-180" : "rotate-0"
+            }`}
+          />
+        )}
       </div>
 
       <AnimatePresence>
@@ -69,12 +93,12 @@ const Dropdown = ({ label, options, onChange, placeholder = "Select" }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2, ease: "easeInOut" }}
-            className="absolute top-[4.9rem] w-full mt-1 text-gray-800 bg-white border border-gray-300 rounded-[12px] shadow-lg  z-10 max-h-60 overflow-y-auto"
+            className="absolute top-[4.9rem] w-full mt-1 text-gray-800 bg-white border border-gray-300 rounded-[12px] shadow-lg z-10 max-h-60 overflow-y-auto"
           >
             {options.map((option, index) => (
               <div
                 key={index}
-                className="px-6 py-3 flex justify-between items-center cursor-pointer hover:bg-gray-100 transition"
+                className="px-6 py-3 flex justify-between text-sm items-center cursor-pointer hover:bg-gray-100 transition"
                 onClick={() => handleSelect(option)}
               >
                 <span>{option.label}</span>

@@ -42,7 +42,7 @@ const StepFour = () => {
 
       setTimeout(() => {
         setShowToast(false);
-        router.push("/"); // ✅ Redirect to home page
+        router.push("/home"); 
       }, 2000);
     }, 2000);
   };

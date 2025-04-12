@@ -45,7 +45,7 @@ const CandStepEight = () => {
 
       setTimeout(() => {
         setShowToast(false);
-        router.push("/"); 
+        router.push("/home"); 
       }, 2000);
     }, 2000);
   };
