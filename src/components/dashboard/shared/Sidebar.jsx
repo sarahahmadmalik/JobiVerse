@@ -36,7 +36,7 @@ export default function Sidebar() {
   return (
     <div
       className={`flex flex-col justify-between h-full lg:h-screen overflow-y-scroll  transition-all duration-300 ${
-        collapsed ? "w-20" : "w-[285px]"
+        collapsed ? "w-20" : "w-[250px]"
       } sticky top-0`}
     >
       {/* Toggle Button */}
