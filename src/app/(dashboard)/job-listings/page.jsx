@@ -1,15 +1,15 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import JobsForYou from "@/components/dashboard/candidate/job-listing/JobsForYou";
 import JobSearchBanner from "@/components/dashboard/candidate/job-listing/Banner";
+import { searchJobs } from "@/services/jobs-service";
+import Loader from "@/components/ui/loader"; // Ensure correct import path
 
 export default function Page() {
   const [searchTerm, setSearchTerm] = useState("");
   const [location, setLocation] = useState("");
-  const [filters, setFilters] = useState({
-    searchTerm: "",
-    location: "",
-  });
+  const [filteredJobs, setFilteredJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const dummyJobs = [
     {
@@ -17,9 +17,9 @@ export default function Page() {
       date: "04/12/2024",
       company: "Google",
       position: "Senior App Developer",
-      salary: 180000, // Annual salary in USD
-      monthlySalary: 15000, // Monthly salary in USD
-      salaryDisplay: "$15k/month", // Display version
+      salary: 180000,
+      monthlySalary: 15000,
+      salaryDisplay: "$15k/month",
       location: "London",
       fullTime: true,
       partTime: false,
@@ -30,7 +30,7 @@ export default function Page() {
       onsite: false,
       entryLevel: false,
       intermediate: false,
-      senior: true
+      senior: true,
     },
     {
       id: 2,
@@ -50,7 +50,7 @@ export default function Page() {
       onsite: false,
       entryLevel: false,
       intermediate: true,
-      senior: false
+      senior: false,
     },
     {
       id: 3,
@@ -70,7 +70,7 @@ export default function Page() {
       onsite: true,
       entryLevel: true,
       intermediate: false,
-      senior: false
+      senior: false,
     },
     {
       id: 4,
@@ -90,7 +90,7 @@ export default function Page() {
       onsite: false,
       entryLevel: false,
       intermediate: false,
-      senior: true
+      senior: true,
     },
     {
       id: 5,
@@ -110,7 +110,7 @@ export default function Page() {
       onsite: false,
       entryLevel: false,
       intermediate: true,
-      senior: false
+      senior: false,
     },
     {
       id: 6,
@@ -130,7 +130,7 @@ export default function Page() {
       onsite: false,
       entryLevel: false,
       intermediate: false,
-      senior: true
+      senior: true,
     },
     {
       id: 7,
@@ -150,7 +150,7 @@ export default function Page() {
       onsite: true,
       entryLevel: false,
       intermediate: true,
-      senior: false
+      senior: false,
     },
     {
       id: 8,
@@ -170,7 +170,7 @@ export default function Page() {
       onsite: true,
       entryLevel: true,
       intermediate: false,
-      senior: false
+      senior: false,
     },
     {
       id: 9,
@@ -190,7 +190,7 @@ export default function Page() {
       onsite: false,
       entryLevel: false,
       intermediate: false,
-      senior: true
+      senior: true,
     },
     {
       id: 10,
@@ -210,15 +210,25 @@ export default function Page() {
       onsite: false,
       entryLevel: false,
       intermediate: true,
-      senior: false
-    }
+      senior: false,
+    },
   ];
 
+  useEffect(() => {
+    setLoading(true);
+    setTimeout(() => {
+      setFilteredJobs(dummyJobs);
+      setLoading(false);
+    }, 1500);
+  }, []);
+
   const handleSearch = () => {
-    setFilters({
-      searchTerm,
-      location,
-    });
+    setLoading(true);
+    setTimeout(() => {
+      const results = searchJobs({ searchTerm, location }, dummyJobs);
+      setFilteredJobs(results);
+      setLoading(false);
+    }, 1000);
   };
 
   return (
@@ -230,9 +240,14 @@ export default function Page() {
         setLocation={setLocation}
         handleSearch={handleSearch}
       />
-
       <div className="p-3">
-        <JobsForYou jobs={dummyJobs} />
+        {loading ? (
+          <div className="h-screen w-full flex justify-center items-center">
+            <Loader />
+          </div>
+        ) : (
+          <JobsForYou jobs={filteredJobs} />
+        )}
       </div>
     </div>
   );

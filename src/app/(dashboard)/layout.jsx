@@ -19,13 +19,15 @@ export default function DashboardLayout({ children }) {
       return "Welcome back, User!";
     }
 
-    const segments = pathname.split('/').filter(segment => segment.trim() !== '');
+    const segments = pathname
+      .split("/")
+      .filter((segment) => segment.trim() !== "");
     const lastSegment = segments[segments.length - 1];
 
     return lastSegment
-      .split('-')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   };
 
   return (
@@ -77,14 +79,18 @@ export default function DashboardLayout({ children }) {
         <Sidebar />
       </div>
 
-      <div className={`flex-1 rounded-tr rounded-[24px] rounded-br bg-white my-3 flex flex-col ${isMobileMenuOpen ? "md:ml-0" : ""}`}>
+      <div
+        className={`flex-1 rounded-tr rounded-[24px] rounded-br bg-white my-3 flex flex-col ${
+          isMobileMenuOpen ? "md:ml-0" : ""
+        }`}
+      >
         <header className="border-b border-gray-200 px-6 py-4 flex items-center">
           <h1 className="text-lg font-[500] text-colors-primary">
             {getPageTitle()}
           </h1>
         </header>
 
-        <main className="p-6">{children}</main>
+        <main className="md:p-6 py-6 px-4">{children}</main>
       </div>
     </div>
   );

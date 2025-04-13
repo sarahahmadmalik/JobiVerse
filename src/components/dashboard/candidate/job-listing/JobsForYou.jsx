@@ -6,7 +6,7 @@ import JobCard from "./JobsCard";
 import JobFilters from "./JobsFilters";
 import Dropdown from "@/components/ui/dropdown";
 
-export default function JobsForYou({ jobs, title="Jobs For You" }) {
+export default function JobsForYou({ jobs, title="Recommended Jobs" }) {
   const [showFilters, setShowFilters] = useState(false);
   
   // Filter states
@@ -196,10 +196,15 @@ export default function JobsForYou({ jobs, title="Jobs For You" }) {
   };
 
   return (
-    <div className="w-full relative p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-lg md:text-xl font-semibold text-gray-900">{title}</h1>
-        <div className="flex items-center gap-3">
+    <div className="w-full relative py-4 md:px-4 px-2">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
+        <div className="flex items-center gap-2">
+          <h1 className="text-lg md:text-xl font-semibold text-gray-900">{title}</h1>
+          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+            {sortedAndFilteredJobs.length} {sortedAndFilteredJobs.length === 1 ? 'job' : 'jobs'}
+          </span>
+        </div>
+        <div className="flex items-center gap-3 mt-6 mb-2 md:my-0">
           {/* Sorting dropdown */}
           <div className="w-48">
             <Dropdown
@@ -214,7 +219,7 @@ export default function JobsForYou({ jobs, title="Jobs For You" }) {
           {/* Mobile filter button */}
           <button 
             onClick={() => setShowFilters(true)}
-            className="md:hidden flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-4 py-2 rounded-lg transition-colors"
+            className="md:hidden flex flex-1 items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-4 py-3 rounded-lg transition-colors"
           >
             <Filter size={18} />
             <span>Filters</span>
@@ -240,10 +245,6 @@ export default function JobsForYou({ jobs, title="Jobs For You" }) {
         </div>
 
         <div className="flex-1">
-          <div className="mb-4 text-sm text-gray-600">
-            Showing {sortedAndFilteredJobs.length} {sortedAndFilteredJobs.length === 1 ? 'job' : 'jobs'}
-          </div>
-          
           <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6">
             {sortedAndFilteredJobs.map((job, index) => (
               <JobCard

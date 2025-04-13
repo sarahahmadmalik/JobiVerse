@@ -56,7 +56,7 @@ const Dropdown = ({
         </label>
       )}
       <div
-        className={`w-full px-6 py-3 border border-gray-300 rounded-[12px] bg-white flex items-center justify-between cursor-pointer 
+        className={`w-full px-4 py-3 border border-gray-300 rounded-[12px] bg-white flex items-center justify-between cursor-pointer 
                    transition-all duration-200 ease-in-out 
                    ${
                      isOpen
