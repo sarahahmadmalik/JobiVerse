@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { MapPin, Bookmark } from 'lucide-react';
 import Button from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation'; 
 
 export default function JobCard({ 
   date = "04/12/2024",
@@ -18,6 +19,8 @@ export default function JobCard({
   backgroundColor = "bg-white"
 }) {
   const [isSaved, setIsSaved] = useState(false);
+  const router = useRouter(); 
+    const id = 1;
   
   // Format salary display
   const formatSalary = (amount) => {
@@ -34,6 +37,11 @@ export default function JobCard({
     e.stopPropagation();
     setIsSaved(!isSaved);
   };
+
+  const handleViewDetails = () => {
+    router.push(`/job-listings/${id}`);
+  };
+
 
   return (
     <motion.div 
@@ -120,7 +128,10 @@ export default function JobCard({
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <Button className="!shadow-none text-white bg-indigo-500 hover:bg-indigo-600 !text-sm transition-colors">
+          <Button onClick={(e) => {
+              e.stopPropagation(); 
+              handleViewDetails();
+            }} className="!shadow-none text-white bg-indigo-500 hover:bg-indigo-600 !text-sm transition-colors">
             View
           </Button>
         </motion.div>

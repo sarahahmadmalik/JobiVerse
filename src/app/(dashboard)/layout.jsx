@@ -18,17 +18,20 @@ export default function DashboardLayout({ children }) {
     if (pathname === "/dashboard" || pathname === "/dashboard/") {
       return "Welcome back, User!";
     }
-
+  
     const segments = pathname
       .split("/")
       .filter((segment) => segment.trim() !== "");
-    const lastSegment = segments[segments.length - 1];
-
-    return lastSegment
+  
+    // Get the first segment only
+    const targetSegment = segments[0];
+  
+    return targetSegment
       .split("-")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
   };
+  
 
   return (
     <div className="flex bg-[#EBEBEB] min-h-screen">
