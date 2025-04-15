@@ -26,9 +26,9 @@ export default function Sidebar() {
   const menuItems = [
     { name: "Home", icon: "/assets/dash_icons/home.svg", path: "/home" },
     {
-      name: "Resume Builder",
+      name: "My Resumes",
       icon: "/assets/dash_icons/builder.svg",
-      path: "/resume-builder",
+      path: "/my-resumes",
     },
     {
       name: "Job Listings",

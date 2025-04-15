@@ -57,7 +57,7 @@ export default function ApplicationTracker() {
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
         <div className="text-center sm:text-left">
           <h1 className="text-lg md:text-xl font-semibold text-gray-900">Track Your Applications</h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-gray-600 text-md mt-1">
             Monitor the progress of your job applications
           </p>
         </div>
