@@ -1,7 +1,8 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation"; // Updated import
+import { usePathname } from "next/navigation";
+import { FaUserCircle } from "react-icons/fa";
 
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
@@ -14,17 +15,14 @@ export default function Sidebar() {
   const isActive = (path) => {
     if (!pathname) return false;
     
-    // Remove leading/trailing slashes and split into segments
     const currentSegments = pathname.replace(/^\/|\/$/g, '').split('/');
     const targetSegments = path.replace(/^\/|\/$/g, '').split('/');
     
-    // Check if all target segments match the corresponding current segments
     return targetSegments.every((segment, index) => 
       currentSegments[index] === segment
     );
   };
 
-  // Updated menu items with paths
   const menuItems = [
     { name: "Home", icon: "/assets/dash_icons/home.svg", path: "/home" },
     {
@@ -223,10 +221,11 @@ export default function Sidebar() {
           collapsed ? "p-3" : "p-4"
         }`}
       >
-        <div
+        <Link
+          href="/profile"  // Changed to link to profile page
           className={`flex px-1 ${
             collapsed ? "justify-center" : "items-center"
-          }`}
+          } hover:text-indigo-600`}
         >
           <div className="relative w-8 h-8">
             <Image
@@ -243,7 +242,7 @@ export default function Sidebar() {
               <p className="text-xs text-gray-500">areeba@nazim.com</p>
             </div>
           )}
-        </div>
+        </Link>
         {!collapsed && (
           <Link
             href="/logout"

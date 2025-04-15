@@ -10,7 +10,8 @@ const Dropdown = ({
   onChange, 
   placeholder = "Select", 
   value,
-  icon: IconComponent = null
+  icon: IconComponent = null,
+  disabled = false
 }) => {
   const [selected, setSelected] = useState(
     options.find(option => option.value === value) || null
@@ -19,6 +20,7 @@ const Dropdown = ({
   const dropdownRef = useRef(null);
 
   const handleSelect = (option) => {
+    if (disabled) return;
     setSelected(option);
     setIsOpen(false);
     if (onChange) {
@@ -36,6 +38,12 @@ const Dropdown = ({
   }, [value, options]);
 
   useEffect(() => {
+    if (disabled && isOpen) {
+      setIsOpen(false);
+    }
+  }, [disabled]);
+
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
@@ -51,26 +59,30 @@ const Dropdown = ({
   return (
     <div ref={dropdownRef} className="flex flex-col w-full relative">
       {label && (
-        <label className="block mb-2 text-colors-textPrimary text-sm font-[400]">
+        <label className={`block mb-2 text-sm font-[400] ${
+          disabled ? "text-gray-400" : "text-colors-textPrimary"
+        }`}>
           {label}
         </label>
       )}
       <div
-        className={`w-full px-4 py-3 border border-gray-300 rounded-[12px] bg-white flex items-center justify-between cursor-pointer 
+        className={`w-full px-4 py-3 border rounded-[12px] flex items-center justify-between cursor-pointer 
                    transition-all duration-200 ease-in-out 
                    ${
-                     isOpen
-                       ? "ring-1 ring-colors-primary border-colors-primary"
-                       : "hover:border-gray-400"
+                     disabled 
+                       ? "bg-gray-100 cursor-not-allowed text-gray-400 border-gray-200"
+                       : isOpen
+                         ? "ring-1 ring-colors-primary border-colors-primary bg-white"
+                         : "bg-white hover:border-gray-400 border-gray-300"
                    }`}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
       >
-        <span className={selected ? "!text-gray-800" : "text-gray-400"}>
+        <span className={selected && !disabled ? "text-gray-800" : "text-gray-400"}>
           {selected ? selected.label : placeholder}
         </span>
         {IconComponent ? (
           <IconComponent 
-            className="text-gray-400" 
+            className={disabled ? "text-gray-400" : "text-gray-500"} 
             size={16}
           />
         ) : (
@@ -81,13 +93,13 @@ const Dropdown = ({
             alt="dropdown-icon"
             className={`transition-transform duration-300 ${
               isOpen ? "rotate-180" : "rotate-0"
-            }`}
+            } ${disabled ? "opacity-50" : ""}`}
           />
         )}
       </div>
 
       <AnimatePresence>
-        {isOpen && (
+        {isOpen && !disabled && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
