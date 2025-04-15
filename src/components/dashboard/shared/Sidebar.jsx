@@ -6,10 +6,15 @@ import { FaUserCircle } from "react-icons/fa";
 
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const [userType, setUserType] = useState('candidate'); // 'candidate' or 'recruiter'
   const pathname = usePathname();
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
+  };
+
+  const toggleUserType = () => {
+    setUserType(userType === 'candidate' ? 'recruiter' : 'candidate');
   };
 
   const isActive = (path) => {
@@ -23,48 +28,31 @@ export default function Sidebar() {
     );
   };
 
-  const menuItems = [
+  const candidateMenuItems = [
     { name: "Home", icon: "/assets/dash_icons/home.svg", path: "/home" },
-    {
-      name: "My Resumes",
-      icon: "/assets/dash_icons/builder.svg",
-      path: "/my-resumes",
-    },
-    {
-      name: "Job Listings",
-      icon: "/assets/dash_icons/listing.svg",
-      path: "/job-listings",
-    },
-    {
-      name: "Application Manager",
-      icon: "/assets/dash_icons/application-manager.svg",
-      path: "/application-manager",
-    },
-    {
-      name: "Saved Jobs",
-      icon: "/assets/dash_icons/saved-jobs.svg",
-      path: "/saved-jobs",
-    },
-    {
-      name: "Schedule",
-      icon: "/assets/dash_icons/schedule.svg",
-      path: "/schedule",
-    },
+    { name: "My Resumes", icon: "/assets/dash_icons/builder.svg", path: "/my-resumes" },
+    { name: "Job Listings", icon: "/assets/dash_icons/listing.svg", path: "/job-listings" },
+    { name: "Application Manager", icon: "/assets/dash_icons/application-manager.svg", path: "/application-manager" },
+    { name: "Saved Jobs", icon: "/assets/dash_icons/saved-jobs.svg", path: "/saved-jobs" },
+    { name: "Schedule", icon: "/assets/dash_icons/schedule.svg", path: "/schedule" },
     { name: "Chats", icon: "/assets/dash_icons/chats.svg", path: "/chats" },
   ];
 
-  const generalItems = [
-    {
-      name: "Help & Support",
-      icon: "/assets/dash_icons/help.svg",
-      path: "/help-support",
-    },
-    {
-      name: "Settings",
-      icon: "/assets/dash_icons/settings.svg",
-      path: "/settings",
-    },
+  const recruiterMenuItems = [
+    { name: "Dashboard", icon: "/assets/dash_icons/home.svg", path: "/recruiter/dashboard" },
+    { name: "Job Postings", icon: "/assets/dash_icons/listing.svg", path: "/recruiter/job-listings" },
+    { name: "Candidates", icon: "/assets/dash_icons/application-manager.svg", path: "/recruiter/candidates" },
+    // { name: "Interviews", icon: "/assets/dash_icons/schedule.svg", path: "/recruiter/interviews" },
+    // { name: "Analytics", icon: "/assets/dash_icons/analytics.svg", path: "/recruiter/analytics" },
+    { name: "Chats", icon: "/assets/dash_icons/chats.svg", path: "/recruiter/chats" },
   ];
+
+  const generalItems = [
+    { name: "Help & Support", icon: "/assets/dash_icons/help.svg", path: "/help-support" },
+    { name: "Settings", icon: "/assets/dash_icons/settings.svg", path: "/settings" },
+  ];
+
+  const menuItems = userType === 'candidate' ? candidateMenuItems : recruiterMenuItems;
 
   return (
     <div
@@ -132,11 +120,39 @@ export default function Sidebar() {
           )}
         </div>
 
+        {/* User Type Toggle */}
+        {!collapsed && (
+          <div className="px-4 py-2 mb-4">
+            <div className="flex items-center justify-between bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={toggleUserType}
+                className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
+                  userType === 'candidate' 
+                    ? 'bg-white text-colors-primary shadow-sm' 
+                    : 'text-gray-500'
+                }`}
+              >
+                Candidate
+              </button>
+              <button
+                onClick={toggleUserType}
+                className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
+                  userType === 'recruiter' 
+                    ? 'bg-white text-colors-primary shadow-sm' 
+                    : 'text-gray-500'
+                }`}
+              >
+                Recruiter
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Main Menu Section */}
         <div className="px-3 py-2">
           {!collapsed && (
             <p className="text-[12px] font-[300] text-[#00000066] mb-2 pl-3">
-              Main Menu
+              {userType === 'candidate' ? 'Candidate Menu' : 'Recruiter Menu'}
             </p>
           )}
           <ul className="space-y-1">
@@ -222,7 +238,7 @@ export default function Sidebar() {
         }`}
       >
         <Link
-          href="/profile"  // Changed to link to profile page
+          href="/profile"
           className={`flex px-1 ${
             collapsed ? "justify-center" : "items-center"
           } hover:text-indigo-600`}
