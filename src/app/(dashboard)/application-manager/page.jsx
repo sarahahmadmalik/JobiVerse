@@ -5,7 +5,6 @@ import Dropdown from "@/components/ui/dropdown";
 import ApplicationCard from "@/components/dashboard/candidate/home/ApplicationCard";
 import { STATUS_PRIORITY } from "@/constants/constants";
 
-
 export default function ApplicationTracker() {
   const [sortOption, setSortOption] = useState('recent');
   
@@ -20,7 +19,7 @@ export default function ApplicationTracker() {
     { id: 8, company: "SpaceX", position: "Systems Engineer", status: "Submitted", date: "04/01/2024", salary: "$130k" },
     { id: 9, company: "Meta", position: "VR Developer", status: "Shortlisted", date: "03/28/2024", salary: "$100k" },
   ];
-
+  
   const sortOptions = [
     { value: 'recent', label: 'Most Recent' },
     { value: 'oldest', label: 'Oldest First' },
@@ -30,7 +29,7 @@ export default function ApplicationTracker() {
     { value: 'company-asc', label: 'Company (A-Z)' },
     { value: 'company-desc', label: 'Company (Z-A)' },
   ];
-
+  
   const sortedApplications = [...applications].sort((a, b) => {
     switch (sortOption) {
       case 'recent':
@@ -71,12 +70,13 @@ export default function ApplicationTracker() {
           />
         </div>
       </div>
-
+      
       <div className="flex-1">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {sortedApplications.map((app) => (
             <ApplicationCard
               key={app.id}
+              id={app.id}
               company={app.company}
               position={app.position}
               status={app.status}

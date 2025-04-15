@@ -56,7 +56,7 @@ export default function NotificationSection({ notifications, handleNotificationT
 export function Toggle({ enabled, onChange }) {
     return (
       <div 
-        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out cursor-pointer ${enabled ? 'bg-teal-500' : 'bg-gray-200'}`}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out cursor-pointer ${enabled ? 'bg-colors-primary' : 'bg-gray-200'}`}
         onClick={onChange}
       >
         <span 

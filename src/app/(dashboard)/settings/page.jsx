@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import ProfileSection from "@/components/dashboard/candidate/settings/ProfileSection";
 import AccountSection from "@/components/dashboard/candidate/settings/AccountSection";
 import NotificationSection from "@/components/dashboard/candidate/settings/NotificationSection";
 import JobPreferencesSection from "@/components/dashboard/candidate/settings/JobPreferenceSection";
@@ -15,6 +14,9 @@ export default function Settings() {
     location: "",
     industry: "",
     employmentTypes: ["Part Time"],
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
 
   const [notifications, setNotifications] = useState({
@@ -25,12 +27,72 @@ export default function Settings() {
     newsletterAndTips: true,
   });
 
+  const [passwordErrors, setPasswordErrors] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
   // Update user data handler
   const updateUserData = (key, value) => {
-    setUserData({
-      userData,
+    setUserData(prev => ({
+      ...prev,
       [key]: value,
+    }));
+  };
+
+  // Handle password change
+  const handlePasswordChange = () => {
+    // Reset errors
+    setPasswordErrors({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
     });
+
+    // Validation
+    let isValid = true;
+    const newErrors = {};
+
+    if (!userData.currentPassword) {
+      newErrors.currentPassword = "Current password is required";
+      isValid = false;
+    }
+
+    if (!userData.newPassword) {
+      newErrors.newPassword = "New password is required";
+      isValid = false;
+    } else if (userData.newPassword.length < 8) {
+      newErrors.newPassword = "Password must be at least 8 characters";
+      isValid = false;
+    }
+
+    if (userData.newPassword !== userData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+      isValid = false;
+    }
+
+    if (!isValid) {
+      setPasswordErrors(newErrors);
+      return;
+    }
+
+    // Here you would typically call an API to change the password
+    console.log("Password change submitted", {
+      currentPassword: userData.currentPassword,
+      newPassword: userData.newPassword
+    });
+
+    // Reset password fields after submission
+    setUserData(prev => ({
+      ...prev,
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    }));
+
+    // Show success message (you might want to use a toast or alert)
+    alert("Password changed successfully!");
   };
 
   // Handle notification toggle
@@ -45,16 +107,16 @@ export default function Settings() {
         newsletterAndTips: newValue,
       });
     } else {
-      setNotifications({
-        notifications,
-        [key]: !notifications[key],
-        all: !notifications[key]
+      setNotifications(prev => ({
+        ...prev,
+        [key]: !prev[key],
+        all: !prev[key]
           ? false
-          : notifications.jobAlerts &&
-            notifications.applicationUpdates &&
-            notifications.recruiterMessages &&
-            notifications.newsletterAndTips,
-      });
+          : prev.jobAlerts &&
+            prev.applicationUpdates &&
+            prev.recruiterMessages &&
+            prev.newsletterAndTips,
+      }));
     }
   };
 
@@ -66,7 +128,7 @@ export default function Settings() {
         userData.employmentTypes.filter((t) => t !== type)
       );
     } else {
-      updateUserData("employmentTypes", [userData.employmentTypes, type]);
+      updateUserData("employmentTypes", [...userData.employmentTypes, type]);
     }
   };
 
@@ -77,18 +139,23 @@ export default function Settings() {
         Manage your account preferences and customize your experience.
       </p>
 
-      <div className="border rounded-lg shadow-sm">
-        <ProfileSection userData={userData} updateUserData={updateUserData} />
-        <AccountSection userData={userData} updateUserData={updateUserData} />
+      <div className="border rounded-lg overflow-hidden shadow-sm">
+        {/* Removed ProfileSection since you have it separately */}
+        <AccountSection 
+          userData={userData} 
+          updateUserData={updateUserData}
+          passwordErrors={passwordErrors}
+          handlePasswordChange={handlePasswordChange}
+        />
         <NotificationSection
           notifications={notifications}
           handleNotificationToggle={handleNotificationToggle}
         />
-        <JobPreferencesSection
+        {/* <JobPreferencesSection
           userData={userData}
           updateUserData={updateUserData}
           handleEmploymentTypeToggle={handleEmploymentTypeToggle}
-        />
+        /> */}
       </div>
     </div>
   );
