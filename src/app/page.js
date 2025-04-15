@@ -51,22 +51,27 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      <MaxWidth className="!px-0">
+     
         <HeroSection />
+         <MaxWidth className="!px-0">
         <SectionWrapper id="features" variants={fadeInUp}>
           <Features />
         </SectionWrapper>
         <SectionWrapper id="steps" variants={fadeInLeft}>
           <StepByStep />
         </SectionWrapper>
+        </MaxWidth>
         <SectionWrapper id="career-cta" variants={fadeInUp}>
           <CareerCTA />
-        </SectionWrapper>
+      </SectionWrapper>
+      <MaxWidth className="!px-0">
         <SectionWrapper id="testimonials" variants={fadeInUp}>
           <Testimonials />
         </SectionWrapper>
-        <Footer />
-      </MaxWidth>
+        </MaxWidth>
+       
+   
+      <Footer />
     </>
   );
 }

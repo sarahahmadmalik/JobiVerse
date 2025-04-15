@@ -1,0 +1,300 @@
+"use client";
+import React, { useRef, useState } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import InterviewCard from "@/components/dashboard/recruiter/home/InterviewCard";
+import Schedule from "@/components/dashboard/candidate/home/Schedule";
+
+function RecruiterHomePage() {
+  // Sample interview data
+  const upcomingInterviews = [
+    {
+      id: "int1",
+      candidate: "Alex Johnson",
+      role: "Senior UX Designer",
+      time: "Today, 10:00 AM",
+      type: "Technical Round",
+      interviewers: ["Sarah Lee", "Mark Chen"],
+      status: "Confirmed",
+      meetingType: "Zoom",
+      meetingLink: "https://zoom.us/j/123456789"
+    },
+    {
+      id: "int2",
+      candidate: "Maria Garcia",
+      role: "Full Stack Developer",
+      time: "Tomorrow, 2:30 PM",
+      type: "System Design",
+      interviewers: ["James Wilson"],
+      status: "Confirmed",
+      meetingType: "On-site",
+      location: "Conference Room B"
+    },
+    {
+      id: "int3",
+      candidate: "James Wilson",
+      role: "Product Manager",
+      time: "May 18, 11:00 AM",
+      type: "Case Study",
+      interviewers: ["Lisa Wong", "Tom Harris"],
+      status: "Pending Confirmation",
+      meetingType: "Google Meet"
+    },
+    {
+      id: "int4",
+      candidate: "Sarah Chen",
+      role: "Data Scientist",
+      time: "May 20, 3:00 PM",
+      type: "Technical Deep Dive",
+      interviewers: ["Raj Patel"],
+      status: "Confirmed",
+      meetingType: "Zoom"
+    }
+  ];
+
+  const recruiterTasks = [
+    {
+      month: "May",
+      day: "15",
+      title: "Interview with Alex Johnson",
+      time: "10:00 AM",
+      type: "Technical Round",
+      candidate: "Senior UX Designer"
+    },
+    {
+      month: "May",
+      day: "16",
+      title: "Review screening assessments",
+      time: "2:00 PM"
+    },
+    {
+      month: "May",
+      day: "17",
+      title: "Hiring sync with engineering",
+      time: "11:00 AM",
+      type: "Internal Meeting"
+    },
+    {
+      month: "May",
+      day: "18",
+      title: "Final interview with Maria Garcia",
+      time: "3:30 PM",
+      type: "Culture Fit"
+    }
+  ];
+
+  const navigationPrevRef = useRef(null);
+  const navigationNextRef = useRef(null);
+  const [isBeginning, setIsBeginning] = useState(true);
+  const [isEnd, setIsEnd] = useState(false);
+  const [swiper, setSwiper] = useState(null);
+
+  const handlePrev = () => {
+    if (swiper && !isBeginning) {
+      swiper.slidePrev();
+    }
+  };
+
+  const handleNext = () => {
+    if (swiper && !isEnd) {
+      swiper.slideNext();
+    }
+  };
+
+  return (
+    <div className="min-h-screen md:py-4">
+      {/* Top Section - Upcoming Interviews */}
+      <div className="flex w-full flex-col lg:flex-row gap-6 mb-8">
+        <div className="flex-1 w-full relative">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg md:text-xl font-semibold">Upcoming Interviews</h2>
+            <button className="text-blue-600 hover:underline">View Calendar</button>
+          </div>
+
+          <div className="relative max-w-[350px] sm:max-w-none w-full overflow-hidden">
+            <Swiper
+              modules={[Navigation]}
+              onSwiper={setSwiper}
+              onSlideChange={(swiper) => {
+                setIsBeginning(swiper.isBeginning);
+                setIsEnd(swiper.isEnd);
+              }}
+              loop={false}
+              slidesPerView={1}
+              spaceBetween={10}
+              breakpoints={{
+                640: {
+                  slidesPerView: 1,
+                  spaceBetween: 10,
+                },
+                768: {
+                  slidesPerView: 2,
+                  spaceBetween: 20,
+                },
+                1024: {
+                  slidesPerView: 2,
+                  spaceBetween: 20,
+                },
+                1920: {
+                  slidesPerView: 3,
+                  spaceBetween: 30,
+                },
+              }}
+              style={{ width: "100%" }}
+              className="w-full"
+            >
+              {upcomingInterviews.map((interview) => (
+                <SwiperSlide key={interview.id} className="w-full">
+                  <div className="w-full px-1">
+                    <InterviewCard {...interview} />
+                  </div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+
+            <button
+              ref={navigationPrevRef}
+              onClick={handlePrev}
+              className={`absolute left-1 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow-md z-10 ${
+                isBeginning
+                  ? "opacity-30 cursor-not-allowed"
+                  : "hover:bg-gray-100"
+              }`}
+              disabled={isBeginning}
+              aria-label="Previous slide"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+            <button
+              ref={navigationNextRef}
+              onClick={handleNext}
+              className={`absolute right-1 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow-md z-10 ${
+                isEnd ? "opacity-30 cursor-not-allowed" : "hover:bg-gray-100"
+              }`}
+              disabled={isEnd}
+              aria-label="Next slide"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div className="lg:w-1/3">
+          <Schedule events={recruiterTasks} />
+        </div>
+      </div>
+
+      {/* Stats Section */}
+      <div className="mb-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg md:text-xl font-semibold">
+            Hiring Overview
+          </h2>
+          <button className="text-blue-600 hover:underline">View Details</button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Total Open Positions */}
+          <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Open Positions</p>
+                <p className="text-2xl font-bold mt-1">14</p>
+              </div>
+              <div className="p-3 rounded-full bg-blue-100 text-blue-600">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">+2 from last week</p>
+          </div>
+
+          {/* Candidates in Pipeline */}
+          <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Active Candidates</p>
+                <p className="text-2xl font-bold mt-1">86</p>
+              </div>
+              <div className="p-3 rounded-full bg-green-100 text-green-600">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">+12 from last week</p>
+          </div>
+
+          {/* Interviews Scheduled */}
+          <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Interviews This Week</p>
+                <p className="text-2xl font-bold mt-1">8</p>
+              </div>
+              <div className="p-3 rounded-full bg-purple-100 text-purple-600">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">3 tomorrow</p>
+          </div>
+
+          {/* Average Time to Hire */}
+          <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Avg. Time to Hire</p>
+                <p className="text-2xl font-bold mt-1">24 days</p>
+              </div>
+              <div className="p-3 rounded-full bg-orange-100 text-orange-600">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">-3 days from last quarter</p>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+  );
+}
+
+export default RecruiterHomePage;

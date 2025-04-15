@@ -167,7 +167,7 @@ export default function RecruiterJobsPage() {
           </p>
         </div>
         
-        <Link href="/dashboard/recruiter/jobs/create">
+        <Link href="/recruiter/job-post">
           <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors">
             <PlusCircle size={20} />
             <span>Create Job</span>

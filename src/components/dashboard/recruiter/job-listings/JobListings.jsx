@@ -13,9 +13,11 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import Button from "@/components/ui/button";
 import RecruiterJobCard from "./JobCard";
-import Dropdown from "@/components/ui/dropdown"; // Import the new Dropdown component
+import Dropdown from "@/components/ui/dropdown";
+import { useRouter } from 'next/navigation';
 
 export default function RecruiterJobsForYou({ jobs, onDelete, onToggleStatus, onEdit }) {
+    const router = useRouter();
     // Enhanced sorting options
     const [sortOption, setSortOption] = useState('recent');
     const sortOptions = [
@@ -85,6 +87,11 @@ export default function RecruiterJobsForYou({ jobs, onDelete, onToggleStatus, on
                 return new Date(b.date.split('/').reverse().join('-')) - new Date(a.date.split('/').reverse().join('-'));
         }
     });
+
+    const handleViewDetails = () => {
+      
+          router.push(`/recruiter/job-listings/1`);
+      };
   
     return (
         <div className="w-full relative py-4 md:px-4 px-2">
@@ -119,6 +126,7 @@ export default function RecruiterJobsForYou({ jobs, onDelete, onToggleStatus, on
                             onDelete={() => onDelete(job.id)}
                             onToggleStatus={() => onToggleStatus(job.id)}
                             onEdit={() => onEdit(job.id)}
+                            onView={handleViewDetails}
                         />
                     ))}
                 </div>

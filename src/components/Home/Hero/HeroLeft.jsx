@@ -20,7 +20,7 @@ const heroLeftVariants = {
 const HeroLeft = () => {
   return (
     <motion.div
-      className="text-center !py-[2rem] md:py-12 md:px-9 px-4 md:text-left z-40"
+      className="text-center 2xl:px-[10rem] !py-[2rem] md:py-12 md:px-9 px-4 md:text-left z-40"
       initial="hidden"
       whileInView="visible"
       variants={heroLeftVariants}

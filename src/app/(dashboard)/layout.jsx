@@ -15,7 +15,24 @@ export default function DashboardLayout({ children }) {
   };
 
   const getPageTitle = () => {
-    if (pathname === "/dashboard" || pathname === "/dashboard/") {
+
+    if (pathname.includes("/recruiter/job-listings")) {
+      return "Job Listings";
+    }
+    if (pathname.includes("/recruiter/chats")) {
+      return "Chats";
+    }
+    if (pathname.includes("/recruiter/schedule")) {
+      return "Schedule";
+    }
+    if (pathname.includes("/recruiter/settings")) {
+      return "Settings";
+    }
+    if (pathname.includes("/recruiter/profile")) {
+      return "Profile";
+    }
+    
+    if (pathname === "/home" || pathname === "/recruiter/home") {
       return "Welcome back, User!";
     }
   
@@ -31,7 +48,6 @@ export default function DashboardLayout({ children }) {
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
   };
-  
 
   return (
     <div className="flex bg-[#EBEBEB] min-h-screen">
