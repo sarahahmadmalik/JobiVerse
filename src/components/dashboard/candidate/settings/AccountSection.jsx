@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Input from "@/components/ui/Input"; // Adjust the import path as needed
+import Input from "@/components/ui/input"; 
 
 export default function AccountSection({ userData, updateUserData }) {
   const [showPasswordForm, setShowPasswordForm] = useState(false);
