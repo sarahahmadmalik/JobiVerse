@@ -53,7 +53,7 @@ const Navbar = () => {
         <ul className="hidden lg:flex gap-6 xl:gap-8 text-[16px] font-[400] text-colors-textPrimary">
           {[
             { name: "Home", href: "/" },
-            { name: "Job Listings", href: "/jobs" },
+            { name: "Job Listings", href: "/job-listings" },
             { name: "About Us", href: "/about" },
             { name: "Contact Us", href: "/contact" },
           ].map((item) => (
