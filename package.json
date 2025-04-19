@@ -19,6 +19,7 @@
     "install": "^0.13.0",
     "lodash.debounce": "^4.0.8",
     "lucide-react": "^0.475.0",
+    "mongoose": "^8.13.2",
     "next": "15.1.6",
     "npm": "^11.3.0",
     "pdfjs-dist": "^3.11.174",
