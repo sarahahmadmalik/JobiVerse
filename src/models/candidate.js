@@ -1,10 +1,10 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const CandidateSchema = new mongoose.Schema(
   {
     authId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Auth',
+      ref: "Auth",
       required: true,
       unique: true,
     },
@@ -25,7 +25,7 @@ const CandidateSchema = new mongoose.Schema(
       trim: true,
       match: [
         /^[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{1,3}[-\s.]?[0-9]{3,6}[-\s.]?[0-9]{0,6}$/,
-        'Please enter a valid phone number',
+        "Please enter a valid phone number",
       ],
     },
     location: {
@@ -37,13 +37,13 @@ const CandidateSchema = new mongoose.Schema(
       {
         jobTitle: {
           type: String,
-          required: true,
+          // required: true,
           trim: true,
           maxlength: 100,
         },
         companyName: {
           type: String,
-          required: true,
+          // required: true,
           trim: true,
           maxlength: 100,
         },
@@ -54,19 +54,19 @@ const CandidateSchema = new mongoose.Schema(
         },
         employmentType: {
           type: String,
-          required: true,
+          // required: true,
           enum: [
-            'Full-time',
-            'Part-time',
-            'Contract',
-            'Temporary',
-            'Internship',
-            'Freelance',
+            "Full-time",
+            "Part-time",
+            "Contract",
+            "Temporary",
+            "Internship",
+            "Freelance",
           ],
         },
         startDate: {
           type: Date,
-          required: true,
+          // required: true,
         },
         endDate: {
           type: Date,
@@ -74,7 +74,7 @@ const CandidateSchema = new mongoose.Schema(
             validator(value) {
               return !value || value > this.startDate;
             },
-            message: 'End date must be after start date',
+            message: "End date must be after start date",
           },
         },
         description: {
@@ -86,27 +86,27 @@ const CandidateSchema = new mongoose.Schema(
     ],
     skills: {
       type: [String],
-      required: true,
-      validate: {
-        validator: (v) => Array.isArray(v) && v.length > 0,
-        message: 'Please add at least one skill',
-      },
+      // required: true,
+      // validate: {
+      //   validator: (v) => Array.isArray(v) && v.length > 0,
+      //   message: "Please add at least one skill",
+      // },
     },
     education: [
       {
         degree: {
           type: String,
-          required: true,
+          // required: true,
         },
         fieldOfStudy: {
           type: String,
-          required: true,
+          // required: true,
           trim: true,
           maxlength: 100,
         },
         institution: {
           type: String,
-          required: true,
+          // required: true,
           trim: true,
           maxlength: 100,
         },
@@ -117,7 +117,7 @@ const CandidateSchema = new mongoose.Schema(
         },
         startDate: {
           type: Date,
-          required: true,
+          // required: true,
         },
         endDate: {
           type: Date,
@@ -125,7 +125,7 @@ const CandidateSchema = new mongoose.Schema(
             validator(value) {
               return !value || value > this.startDate;
             },
-            message: 'End date must be after start date',
+            message: "End date must be after start date",
           },
         },
         description: {
@@ -141,7 +141,7 @@ const CandidateSchema = new mongoose.Schema(
         trim: true,
         match: [
           /^(https?:\/\/)?(www\.)?linkedin\.com\/.+/i,
-          'Please enter a valid LinkedIn URL',
+          "Please enter a valid LinkedIn URL",
         ],
       },
       portfolio: {
@@ -149,7 +149,7 @@ const CandidateSchema = new mongoose.Schema(
         trim: true,
         match: [
           /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/,
-          'Please enter a valid website URL',
+          "Please enter a valid website URL",
         ],
       },
       github: {
@@ -157,7 +157,7 @@ const CandidateSchema = new mongoose.Schema(
         trim: true,
         match: [
           /^(https?:\/\/)?(www\.)?github\.com\/.+/i,
-          'Please enter a valid GitHub URL',
+          "Please enter a valid GitHub URL",
         ],
       },
       dribbble: {
@@ -165,14 +165,14 @@ const CandidateSchema = new mongoose.Schema(
         trim: true,
         match: [
           /^(https?:\/\/)?(www\.)?dribbble\.com\/.+/i,
-          'Please enter a valid Dribbble URL',
+          "Please enter a valid Dribbble URL",
         ],
       },
     },
     jobPreferences: {
       desiredTitle: {
         type: String,
-        required: true,
+        // required: true,
         trim: true,
         maxlength: 100,
       },
@@ -197,7 +197,7 @@ const CandidateSchema = new mongoose.Schema(
       employmentTypes: [
         {
           type: String,
-          enum: ['Full-time', 'Part-time', 'Contract', 'Temporary'],
+          enum: ["Full-time", "Part-time", "Contract", "Temporary"],
         },
       ],
     },
@@ -209,20 +209,20 @@ const CandidateSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-CandidateSchema.index({ 'experience.jobTitle': 'text' });
+CandidateSchema.index({ "experience.jobTitle": "text" });
 CandidateSchema.index({ skills: 1 });
-CandidateSchema.index({ 'education.degree': 1 });
-CandidateSchema.index({ 'jobPreferences.industries': 1 });
-CandidateSchema.index({ 'jobPreferences.availability': 1 });
-CandidateSchema.index({ firstName: 'text', lastName: 'text' });
+CandidateSchema.index({ "education.degree": 1 });
+CandidateSchema.index({ "jobPreferences.industries": 1 });
+CandidateSchema.index({ "jobPreferences.availability": 1 });
+CandidateSchema.index({ firstName: "text", lastName: "text" });
 
-CandidateSchema.pre('save', function (next) {
+CandidateSchema.pre("save", function (next) {
   const trimStrings = (obj) => {
-    if (obj && typeof obj === 'object') {
+    if (obj && typeof obj === "object") {
       Object.keys(obj).forEach((key) => {
-        if (typeof obj[key] === 'string') {
+        if (typeof obj[key] === "string") {
           obj[key] = obj[key].trim();
-        } else if (typeof obj[key] === 'object') {
+        } else if (typeof obj[key] === "object") {
           trimStrings(obj[key]);
         }
       });
@@ -232,5 +232,7 @@ CandidateSchema.pre('save', function (next) {
   next();
 });
 
-export default mongoose.models.Candidate ||
-  mongoose.model('Candidate', CandidateSchema);
+const Candidate =
+  mongoose.models.Candidate || mongoose.model("Candidate", CandidateSchema);
+
+export default Candidate;

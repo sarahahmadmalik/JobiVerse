@@ -1,24 +1,32 @@
-import { MongoClient, ServerApiVersion } from 'mongodb';
+// In your db.js connection file
+import mongoose from "mongoose";
 
-const client = new MongoClient(process.env.MONGODB_URI, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  },
-});
+let isConnected = false;
 
-const connectDB = async () => {
+ const connectDB = async () => {
+  if (isConnected) return mongoose.connection;
+
   try {
-    await client.connect();
-    await client.db('jobiverse').command({ ping: 1 });
-    console.log('Successfully connected to MongoDB');
+    const connection = await mongoose.connect(process.env.MONGODB_URI, {
+      dbName: "jobiverse",
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      maxPoolSize: 50,
+    });
+
+    isConnected = true;
+    console.log("MongoDB connected successfully");
+
+    // Get collections properly
+    const db = connection.connection.db;
+    const collections = await db.listCollections().toArray();
+    // console.log("Available collections:", collections);
+
+    return connection;
   } catch (error) {
-    console.error('MongoDB connection error:', error);
+    console.error("MongoDB connection error:", error);
     throw error;
-  } finally {
-    await client.close();
   }
 };
 
-export default connectDB;
+export default connectDB

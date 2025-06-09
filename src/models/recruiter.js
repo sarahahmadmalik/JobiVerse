@@ -1,65 +1,65 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const RecruiterSchema = new mongoose.Schema(
   {
     authId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Auth',
+      ref: "Auth",
       required: true,
       unique: true,
     },
     company: {
       name: {
         type: String,
-        required: [true, 'Company name is required'],
+        required: [true, "Company name is required"],
         trim: true,
-        maxlength: [100, 'Company name cannot exceed 100 characters'],
+        maxlength: [100, "Company name cannot exceed 100 characters"],
       },
       industry: {
         type: String,
-        required: [true, 'Industry is required'],
+        // required: [true, "Industry is required"],
         trim: true,
       },
       size: {
         type: String,
-        required: [true, 'Company size is required'],
+        // required: [true, "Company size is required"],
         trim: true,
       },
       location: {
         type: String,
-        required: [true, 'Location is required'],
+        // required: [true, "Location is required"],
         trim: true,
-        maxlength: [100, 'Location cannot exceed 100 characters'],
+        maxlength: [100, "Location cannot exceed 100 characters"],
       },
       logo: {
         type: String,
-        default: '',
+        default: "",
       },
       description: {
         type: String,
-        required: [true, 'Company description is required'],
+        // required: [true, "Company description is required"],
         trim: true,
-        maxlength: [2000, 'Description cannot exceed 2000 characters'],
+        maxlength: [2000, "Description cannot exceed 2000 characters"],
       },
       specialties: {
         type: [String],
-        required: [true, 'At least one specialty is required'],
-        validate: {
-          validator: (v) => Array.isArray(v) && v.length > 0,
-          message: 'Please add at least one specialty',
-        },
+        // required: [true, "At least one specialty is required"],
+        // validate: {
+        //   validator: (v) => Array.isArray(v) && v.length > 0,
+        //   message: "Please add at least one specialty",
+        // },
       },
       foundedYear: {
         type: Number,
-        min: [1800, 'Founded year seems too early'],
-        max: [new Date().getFullYear(), 'Founded year cannot be in the future'],
+        min: [1800, "Founded year seems too early"],
+        max: [new Date().getFullYear(), "Founded year cannot be in the future"],
       },
       website: {
         type: String,
         trim: true,
         match: [
           /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/,
-          'Please enter a valid website URL',
+          "Please enter a valid website URL",
         ],
       },
       socialLinks: {
@@ -68,7 +68,7 @@ const RecruiterSchema = new mongoose.Schema(
           trim: true,
           match: [
             /^(https?:\/\/)?(www\.)?facebook\.com\/.+/i,
-            'Please enter a valid Facebook URL',
+            "Please enter a valid Facebook URL",
           ],
         },
         twitter: {
@@ -76,7 +76,7 @@ const RecruiterSchema = new mongoose.Schema(
           trim: true,
           match: [
             /^(https?:\/\/)?(www\.)?twitter\.com\/.+/i,
-            'Please enter a valid Twitter URL',
+            "Please enter a valid Twitter URL",
           ],
         },
         instagram: {
@@ -84,7 +84,7 @@ const RecruiterSchema = new mongoose.Schema(
           trim: true,
           match: [
             /^(https?:\/\/)?(www\.)?instagram\.com\/.+/i,
-            'Please enter a valid Instagram URL',
+            "Please enter a valid Instagram URL",
           ],
         },
         linkedin: {
@@ -92,7 +92,7 @@ const RecruiterSchema = new mongoose.Schema(
           trim: true,
           match: [
             /^(https?:\/\/)?(www\.)?linkedin\.com\/.+/i,
-            'Please enter a valid LinkedIn URL',
+            "Please enter a valid LinkedIn URL",
           ],
         },
       },
@@ -105,12 +105,12 @@ const RecruiterSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-RecruiterSchema.pre('save', function (next) {
+RecruiterSchema.pre("save", function (next) {
   const trimStrings = (obj) => {
     Object.keys(obj).forEach((key) => {
-      if (typeof obj[key] === 'string') {
+      if (typeof obj[key] === "string") {
         obj[key] = obj[key].trim();
-      } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+      } else if (typeof obj[key] === "object" && obj[key] !== null) {
         trimStrings(obj[key]);
       }
     });
@@ -120,26 +120,28 @@ RecruiterSchema.pre('save', function (next) {
   next();
 });
 
-RecruiterSchema.post('save', async function (doc, next) {
+RecruiterSchema.post("save", async function (doc, next) {
   if (doc.onboardingCompleted) {
     try {
-      await mongoose.model('Auth').updateOne(
-        { _id: doc.authId },
-        { $set: { hasCompletedOnboarding: true } }
-      );
+      await mongoose
+        .model("Auth")
+        .updateOne(
+          { _id: doc.authId },
+          { $set: { hasCompletedOnboarding: true } }
+        );
     } catch (err) {
-      console.error('Auth update error:', err);
+      console.error("Auth update error:", err);
     }
   }
   next();
 });
 
 RecruiterSchema.query.byIndustry = function (industry) {
-  return this.where({ 'company.industry': new RegExp(industry, 'i') });
+  return this.where({ "company.industry": new RegExp(industry, "i") });
 };
 
 RecruiterSchema.query.withLogo = function () {
-  return this.where('company.logo').ne('');
+  return this.where("company.logo").ne("");
 };
 
 RecruiterSchema.methods.getPublicProfile = function () {
@@ -154,15 +156,17 @@ RecruiterSchema.methods.getPublicProfile = function () {
 
 RecruiterSchema.methods.hasSocialLinks = function () {
   return Object.values(this.company.socialLinks).some(
-    (link) => link && link.trim() !== ''
+    (link) => link && link.trim() !== ""
   );
 };
 
-RecruiterSchema.index({ 'company.name': 'text' });
-RecruiterSchema.index({ 'company.industry': 1 });
-RecruiterSchema.index({ 'company.location': 1 });
-RecruiterSchema.index({ 'company.specialties': 1 });
-RecruiterSchema.index({ 'company.foundedYear': 1 });
+RecruiterSchema.index({ "company.name": "text" });
+RecruiterSchema.index({ "company.industry": 1 });
+RecruiterSchema.index({ "company.location": 1 });
+RecruiterSchema.index({ "company.specialties": 1 });
+RecruiterSchema.index({ "company.foundedYear": 1 });
 
-export default mongoose.models.Recruiter ||
-  mongoose.model('Recruiter', RecruiterSchema);
+const Recruiter =
+  mongoose.models.Recruiter || mongoose.model("Recruiter", RecruiterSchema);
+
+export default Recruiter;

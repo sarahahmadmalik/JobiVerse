@@ -16,7 +16,7 @@ const AuthSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      // required: true,
       minlength: 8,
       select: false,
     },
@@ -38,7 +38,7 @@ const AuthSchema = new mongoose.Schema(
     lastLogin: Date,
     profileId: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
+      // required: true,
       index: true,
     },
     otpAttempts: {
@@ -54,10 +54,6 @@ const AuthSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
-
-AuthSchema.index({ email: 1 }, { unique: true });
-AuthSchema.index({ isVerified: 1 });
-AuthSchema.index({ role: 1, isVerified: 1 });
 
 AuthSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
