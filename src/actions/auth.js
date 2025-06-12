@@ -43,11 +43,17 @@ export async function initiateRegistration(email, name, role) {
     let profile;
 
     if (role === "candidate") {
+     const nameParts = name.trim().split(/\s+/);
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || "";
+      
+      console.log(`Name splitting: "${name}" -> First: "${firstName}", Last: "${lastName}"`);
+      
       profile = await Candidate.create([
         {
           authId: authUser[0]._id,
-          firstName: name.split(" ")[0] || "",
-          lastName: name.split(" ")[1] || "",
+          firstName: firstName,
+          lastName: lastName,
           isOnboarded: false,
         },
       ]);

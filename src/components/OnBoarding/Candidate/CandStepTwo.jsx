@@ -7,37 +7,65 @@ import Spinner from "@/components/ui/spinner";
 import Toast from "@/components/ui/toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { useOnboarding } from "@/contexts/OnBoardingContext/OnboardingContext";
+import { useOnboardingData } from "@/hooks/useOnboardingData";
+
 const CandStepTwo = () => {
-  const { nextStep } = useOnboarding();
-  const [loading, setLoading] = useState(false);
+  const { nextStep, updateFormData } = useOnboarding();
+  const { fetchData, isLoading, error } = useOnboardingData("step-two");
   const [showToast, setShowToast] = useState(false);
+  const [formData, setFormData] = useState({
+    phone: "",
+    desiredTitle: "",
+    availability: "",
+    location: ""
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    updateFormData({ [name]: value });
+  };
+
+  const handleDropdownChange = (name, value) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+    updateFormData({ [name]: value });
+  };
+
+  const handleSave = async () => {
+    try {
+      await fetchData({
+        method: "POST",
+        body: formData
+      });
+
+      setShowToast(true);
+      setToastConfig({
+        type: "success",
+        title: "Success!",
+        message: "Your details have been saved successfully.",
+      });
+
+      setTimeout(() => {
+        nextStep(formData);
+      }, 2000);
+    } catch (err) {
+      setShowToast(true);
+      setToastConfig({
+        type: "error",
+        title: "Error",
+        message: error || "Failed to save your details",
+      });
+    }
+  };
+
   const [toastConfig, setToastConfig] = useState({
     type: "success",
     title: "",
     message: "",
   });
 
-  const handleSave = () => {
-    setLoading(true);
-
-    setTimeout(() => {
-      setLoading(false);
-      setToastConfig({
-        type: "success",
-        title: "Success!",
-        message: "Your details have been saved successfully.",
-      });
-      setShowToast(true);
-
-      setTimeout(() => {
-        setShowToast(false);
-        nextStep({});
-      }, 2000);
-    }, 2000);
-  };
-
   return (
-    <div className="flex gap-3 w-full  max-w-[637px] min-h-[450px] flex-col items-center justify-center bg-white px-4 py-6 sm:px-6 md:px-8 lg:px-10 rounded-[24px] shadow-[0px_8px_18px_0px_rgba(19,17,28,0.12)]">
+    <div className="flex gap-3 w-full max-w-[637px] min-h-[450px] flex-col items-center justify-center bg-white px-4 py-6 sm:px-6 md:px-8 lg:px-10 rounded-[24px] shadow-[0px_8px_18px_0px_rgba(19,17,28,0.12)]">
       <AnimatePresence>
         {showToast && (
           <motion.div
@@ -55,6 +83,7 @@ const CandStepTwo = () => {
           </motion.div>
         )}
       </AnimatePresence>
+      
       <h2 className="text-2xl text-colors-textPrimary font-[700] mt-4 text-center">
         Tell us a bit about yourself
       </h2>
@@ -67,33 +96,51 @@ const CandStepTwo = () => {
           <label className="block mb-2 text-colors-textPrimary text-sm font-[400]">
             Phone (optional)
           </label>
-          <Input type="text" placeholder="e.g., +1 (555) 123-4567" />
+          <Input 
+            type="text" 
+            name="phone"
+            placeholder="e.g., +1 (555) 123-4567"
+            value={formData.phone}
+            onChange={handleInputChange}
+          />
         </div>
         <div>
           <label className="block mb-2 text-colors-textPrimary text-sm font-[400]">
             Desired Job Title
           </label>
-          <Input type="text" placeholder="e.g., Software Engineer" />
+          <Input 
+            type="text" 
+            name="desiredTitle"
+            placeholder="e.g., Software Engineer"
+            value={formData.desiredTitle}
+            onChange={handleInputChange}
+          />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Dropdown
               label="Availability Status"
+              name="availability"
               options={[
                 { value: "immediately", label: "Immediately Available" },
                 { value: "two_weeks", label: "Available in 2 Weeks" },
                 { value: "one_month", label: "Available in 1 Month" },
               ]}
+              value={formData.availability}
+              onChange={(value) => handleDropdownChange("availability", value)}
             />
           </div>
           <div>
             <Dropdown
               label="Location"
+              name="location"
               options={[
                 { value: "remote", label: "Remote" },
                 { value: "onsite", label: "On-site" },
                 { value: "hybrid", label: "Hybrid" },
               ]}
+              value={formData.location}
+              onChange={(value) => handleDropdownChange("location", value)}
             />
           </div>
         </div>
@@ -102,13 +149,13 @@ const CandStepTwo = () => {
       <div className="flex justify-center sm:justify-end mt-5 mb-5 sm:mt-3 sm:mb-0 w-full px-4">
         <Button
           className={`!font-[400] !text-[16px] flex items-center justify-center gap-3 transition-all duration-300 ${
-            loading ? "!shadow-none" : "subtle-shadow"
+            isLoading ? "!shadow-none" : "subtle-shadow"
           }`}
           onClick={handleSave}
-          disabled={loading}
+          disabled={isLoading}
         >
           Save & Continue
-          {loading && (
+          {isLoading && (
             <Spinner className="transition-opacity duration-300 opacity-100" />
           )}
         </Button>

@@ -15,44 +15,55 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const router = useRouter();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+const handleLogin = async (e) => {
+  e.preventDefault();
+  setEmailLoading(true);
+  setError(null);
 
-    try {
-      const result = await signIn("credentials", {
-        redirect: false,
-        email,
-        password,
-      });
+  try {
+    const result = await signIn("credentials", {
+      redirect: false,
+      email,
+      password,
+      callbackUrl: "/home" // Default redirect
+    });
 
-      if (result?.error) {
-        setError(result.error);
+    if (result?.error) {
+      setError(result.error);
+    } else {
+      const response = await fetch('/api/auth/session');
+      const session = await response.json();
+      console.log(session)
+      if (session?.user?.isFirstLogin) {
+        // Redirect to onboarding for first-time users
+        router.push("/onboarding");
       } else {
+        // Regular users go to home
         router.push("/home");
       }
-    } catch (err) {
-      setError("An unexpected error occurred");
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (err) {
+    setError("An unexpected error occurred");
+  } finally {
+    setEmailLoading(false);
+  }
+};
 
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    try {
-      await signIn("google", { callbackUrl: "/home" });
-    } catch (err) {
-      setError("Failed to login with Google");
-    } finally {
-      setLoading(false);
-    }
-  };
+const handleGoogleLogin = async () => {
+  setGoogleLoading(true);
+  try {
+    await signIn("google", { callbackUrl: "/home" });
+  } catch (err) {
+    setError("Failed to login with Google");
+  } finally {
+    setGoogleLoading(false);
+  }
+};
 
   return (
     <div className="flex h-screen">
@@ -88,7 +99,7 @@ const Login = () => {
             type="button"
             onClick={handleGoogleLogin}
             className="w-full text-colors-textPrimary text-[16px] flex items-center justify-center border border-[#00000066] rounded-[12px] px-[24px] gap-3 py-[12px] transition-all duration-500 ease-in-out mb-4 hover:bg-gray-100"
-            disabled={loading}
+            disabled={googleLoading}
           >
             <Image
               width={20}
@@ -96,7 +107,7 @@ const Login = () => {
               src="/assets/google.svg"
               alt="google-icon"
             />
-            {loading ? "Processing..." : "Login with Google"}
+            {googleLoading ? "Processing..." : "Login with Google"}
           </button>
 
           {/* Separator */}
@@ -158,8 +169,8 @@ const Login = () => {
           </div>
 
           {/* Login Button */}
-          <Button type="submit" className="w-full !font-[400]" disabled={loading}>
-            {loading ? (
+          <Button type="submit" className="w-full !font-[400]" disabled={emailLoading}>
+            {emailLoading ? (
               <>
                 <Spinner /> Logging in...
               </>

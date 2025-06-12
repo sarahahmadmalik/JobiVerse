@@ -3,6 +3,7 @@
 import { Poppins, Inter } from "next/font/google";
 import { OnboardingProvider } from "@/contexts/OnBoardingContext/OnboardingContext";
 import { metadata } from "@/app/layout.server";
+import { SessionProvider } from "next-auth/react";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -24,7 +25,9 @@ export default function RootLayout({ children }) {
         <link rel="icon" href="/logo-small.png" sizes="any" type="image/png" />
       </head>
       <body className={`${poppins.variable} ${inter.variable} antialiased`}>
-        <OnboardingProvider>{children}</OnboardingProvider>
+        <OnboardingProvider>
+            <SessionProvider>{children}</SessionProvider>
+        </OnboardingProvider>
       </body>
     </html>
   );

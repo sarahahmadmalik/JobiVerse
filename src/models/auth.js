@@ -18,12 +18,17 @@ const AuthSchema = new mongoose.Schema(
       type: String,
       // required: true,
       minlength: 8,
-      select: false,
+      select: true,
     },
     role: {
       type: String,
       required: true,
       enum: ["recruiter", "candidate"],
+      index: true,
+    },
+     isFirstLogin: {
+      type: Boolean,
+      default: true, 
       index: true,
     },
     isVerified: {
@@ -55,12 +60,12 @@ const AuthSchema = new mongoose.Schema(
   }
 );
 
-AuthSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
+// AuthSchema.pre("save", async function (next) {
+//   if (!this.isModified("password")) return next();
+//   const salt = await bcrypt.genSalt(10);
+//   this.password = await bcrypt.hash(this.password, salt);
+//   next();
+// });
 
 AuthSchema.methods.generateVerificationOTP = function () {
   const otp = Math.floor(100000 + Math.random() * 900000).toString();

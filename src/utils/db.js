@@ -1,4 +1,3 @@
-// In your db.js connection file
 import mongoose from "mongoose";
 
 let isConnected = false;
