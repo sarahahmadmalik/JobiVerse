@@ -8,17 +8,48 @@ import Toast from "@/components/ui/toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { useOnboarding } from "@/contexts/OnBoardingContext/OnboardingContext";
 import Spinner from "@/components/ui/spinner";
+import { useOnboardingData } from "@/hooks/useOnboardingData";
+
+const LOCATIONS = [
+  { value: "Remote", label: "Remote" },
+  { value: "New York, NY", label: "New York, NY" },
+  { value: "San Francisco, CA", label: "San Francisco, CA" },
+  { value: "Austin, TX", label: "Austin, TX" },
+  { value: "Seattle, WA", label: "Seattle, WA" },
+  { value: "Chicago, IL", label: "Chicago, IL" },
+  { value: "Other", label: "Other" }
+];
+
+const INDUSTRIES = [
+  { value: "technology", label: "Technology" },
+  { value: "finance", label: "Finance" },
+  { value: "healthcare", label: "Healthcare" },
+  { value: "education", label: "Education" },
+  { value: "manufacturing", label: "Manufacturing" },
+  { value: "retail", label: "Retail" },
+  { value: "hospitality", label: "Hospitality" },
+  { value: "marketing", label: "Marketing" },
+  { value: "design", label: "Design" },
+  { value: "construction", label: "Construction" },
+  { value: "transportation", label: "Transportation" },
+  { value: "entertainment", label: "Entertainment" },
+  { value: "energy", label: "Energy" },
+  { value: "agriculture", label: "Agriculture" },
+  { value: "government", label: "Government" },
+  { value: "nonprofit", label: "Nonprofit" },
+  { value: "other", label: "Other" }
+];
 
 const CandStepSeven = () => {
-  const { nextStep } = useOnboarding();
+  const { nextStep, updateFormData } = useOnboarding();
+  const { fetchData, isLoading, error } = useOnboardingData("step-seven");
   const [jobPreferences, setJobPreferences] = useState({
-    jobTitle: "",
-    locations: "",
-    industry: "",
-    salary: "",
-    employmentType: [],
+    desiredTitle: "",
+    preferredLocations: [],
+    industries: [],
+    salaryExpectation: "",
+    employmentTypes: [],
   });
-  const [isLoading, setIsLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastConfig, setToastConfig] = useState({
     type: "success",
@@ -32,18 +63,30 @@ const CandStepSeven = () => {
 
   const handleEmploymentTypeChange = (type) => {
     setJobPreferences((prev) => {
-      const updatedTypes = prev.employmentType.includes(type)
-        ? prev.employmentType.filter((t) => t !== type)
-        : [...prev.employmentType, type];
-      return { ...prev, employmentType: updatedTypes };
+      const updatedTypes = prev.employmentTypes.includes(type)
+        ? prev.employmentTypes.filter((t) => t !== type)
+        : [...prev.employmentTypes, type];
+      return { ...prev, employmentTypes: updatedTypes };
     });
   };
 
-  const handleSave = () => {
-    setIsLoading(true);
+  const handleSave = async () => {
+    if (!jobPreferences.desiredTitle || jobPreferences.employmentTypes.length === 0) {
+      setToastConfig({
+        type: "error",
+        title: "Validation Error",
+        message: "Please fill in required fields (Job Title and Employment Type)",
+      });
+      setShowToast(true);
+      return;
+    }
 
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await fetchData({
+        method: "POST",
+        body: { jobPreferences }
+      });
+
       setToastConfig({
         type: "success",
         title: "Success!",
@@ -55,7 +98,14 @@ const CandStepSeven = () => {
         setShowToast(false);
         nextStep({ jobPreferences });
       }, 2000);
-    }, 2000);
+    } catch (err) {
+      setToastConfig({
+        type: "error",
+        title: "Error",
+        message: error || "Failed to save your preferences",
+      });
+      setShowToast(true);
+    }
   };
 
   return (
@@ -89,33 +139,32 @@ const CandStepSeven = () => {
       <Input
         label="Desired Job Title"
         placeholder="e.g., Data Scientist, Marketing Specialist"
-        value={jobPreferences.jobTitle}
-        onChange={(e) => handleChange("jobTitle", e.target.value)}
+        value={jobPreferences.desiredTitle}
+        onChange={(e) => handleChange("desiredTitle", e.target.value)}
       />
-      <Input
+
+      <Dropdown
         label="Preferred Locations"
-        placeholder="e.g., New York, Remote"
-        value={jobPreferences.locations}
-        onChange={(e) => handleChange("locations", e.target.value)}
+        options={LOCATIONS}
+        value={jobPreferences.preferredLocations[0] || ""}
+        onChange={(value) => handleChange("preferredLocations", [value])}
+        placeholder="Select preferred location"
       />
 
       <div className="grid grid-cols-1 place-items-center sm:grid-cols-2 gap-3 w-full">
         <Dropdown
           label="Industry"
-          options={[
-            { label: "Tech", value: "tech" },
-            { label: "Finance", value: "finance" },
-            { label: "Healthcare", value: "healthcare" },
-          ]}
-          onChange={(value) => handleChange("industry", value)}
+          options={INDUSTRIES}
+          value={jobPreferences.industries[0] || ""}
+          onChange={(value) => handleChange("industries", [value])}
           placeholder="Select an industry"
         />
         <Input
           label="Salary Expectation (optional)"
           placeholder="e.g., $50,000 per year"
           className="-mb-5"
-          value={jobPreferences.salary}
-          onChange={(e) => handleChange("salary", e.target.value)}
+          value={jobPreferences.salaryExpectation}
+          onChange={(e) => handleChange("salaryExpectation", e.target.value)}
         />
       </div>
 
@@ -124,7 +173,7 @@ const CandStepSeven = () => {
           Employment Type
         </label>
         <div className="flex flex-wrap gap-5 mt-2">
-          {["Part Time", "Full Time", "Contract", "Temporary"].map(
+          {["Full Time", "Part Time", "Contract", "Freelance", "Internship"].map(
             (type, index) => (
               <div className="flex gap-3 items-center" key={index}>
                 <label
@@ -133,7 +182,7 @@ const CandStepSeven = () => {
                 >
                   <input
                     type="checkbox"
-                    checked={jobPreferences.employmentType.includes(type)}
+                    checked={jobPreferences.employmentTypes.includes(type)}
                     onChange={() => handleEmploymentTypeChange(type)}
                   />
                   {type}

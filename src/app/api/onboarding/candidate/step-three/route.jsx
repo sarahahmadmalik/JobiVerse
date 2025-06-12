@@ -24,7 +24,7 @@ export async function POST(request) {
 
     const candidate = await candidateService.saveOnboardingStep(
       session.user.id,
-      3, // Step number for skills
+      2, // Step number for skills
       skills
     );
     

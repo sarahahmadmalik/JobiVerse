@@ -3,26 +3,44 @@
 import { useState } from "react";
 import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
+import Dropdown from "@/components/ui/dropdown";
 import Toast from "@/components/ui/toast";
 import { X, PlusCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useOnboarding } from "@/contexts/OnBoardingContext/OnboardingContext";
 import Spinner from "@/components/ui/spinner";
+import { useOnboardingData } from "@/hooks/useOnboardingData";
+
+// Constants for dropdown options
+const WORK_LOCATIONS = [
+  { value: "Onsite", label: "Onsite" },
+  { value: "Remote", label: "Remote" },
+  { value: "Hybrid", label: "Hybrid" }
+];
+
+const EMPLOYMENT_TYPES = [
+  { value: "Full-time", label: "Full-time" },
+  { value: "Part-time", label: "Part-time" },
+  { value: "Contract", label: "Contract" },
+  { value: "Temporary", label: "Temporary" },
+  { value: "Internship", label: "Internship" },
+  { value: "Freelance", label: "Freelance" }
+];
 
 const CandStepFour = () => {
-  const { nextStep } = useOnboarding();
+  const { nextStep, updateFormData } = useOnboarding();
+  const { fetchData, isLoading, error } = useOnboardingData("step-four");
   const [experiences, setExperiences] = useState([
     {
       jobTitle: "",
-      company: "",
-      location: "",
+      companyName: "",
+      location: "", // Changed from 'location' to 'location'
       employmentType: "",
       startDate: "",
       endDate: "",
       description: "",
     },
   ]);
-  const [isLoading, setIsLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastConfig, setToastConfig] = useState({
     type: "success",
@@ -30,13 +48,12 @@ const CandStepFour = () => {
     message: "",
   });
 
-  // Add a new experience field
   const addExperience = () => {
     setExperiences([
       ...experiences,
       {
         jobTitle: "",
-        company: "",
+        companyName: "",
         location: "",
         employmentType: "",
         startDate: "",
@@ -46,24 +63,54 @@ const CandStepFour = () => {
     ]);
   };
 
-  // Remove an experience field
   const removeExperience = (index) => {
     setExperiences(experiences.filter((_, i) => i !== index));
   };
 
-  // Handle input change
   const handleInputChange = (index, field, value) => {
     const updatedExperiences = [...experiences];
     updatedExperiences[index][field] = value;
     setExperiences(updatedExperiences);
+    updateFormData({ experiences: updatedExperiences });
   };
 
-  // Save & Continue action
-  const handleSave = () => {
-    setIsLoading(true);
+  const validateExperiences = () => {
+    return experiences.every(exp => 
+      exp.jobTitle.trim() && 
+      exp.companyName.trim() && 
+      exp.startDate &&
+      exp.location && // Added validation for work location
+      exp.employmentType // Added validation for employment type
+    );
+  };
 
-    setTimeout(() => {
-      setIsLoading(false);
+  const handleSave = async () => {
+    if (!validateExperiences()) {
+      setToastConfig({
+        type: "error",
+        title: "Validation Error",
+        message: "Please fill all required fields (Job Title, companyName, Start Date, Work Location, and Employment Type)",
+      });
+      setShowToast(true);
+      return;
+    }
+
+    try {
+      const formattedExperiences = experiences.map(exp => ({
+        jobTitle: exp.jobTitle.trim(),
+        companyNameName: exp.companyName.trim(),
+        location: exp.location,
+        employmentType: exp.employmentType,
+        startDate: exp.startDate,
+        endDate: exp.endDate || null,
+        description: exp.description.trim()
+      }));
+
+      await fetchData({
+        method: "POST",
+        body: { experiences: formattedExperiences }
+      });
+
       setToastConfig({
         type: "success",
         title: "Success!",
@@ -72,15 +119,20 @@ const CandStepFour = () => {
       setShowToast(true);
 
       setTimeout(() => {
-        setShowToast(false);
-        nextStep({ experiences });
+        nextStep({ experiences: formattedExperiences });
       }, 2000);
-    }, 2000);
+    } catch (err) {
+      setToastConfig({
+        type: "error",
+        title: "Error",
+        message: error || "Failed to save your experiences",
+      });
+      setShowToast(true);
+    }
   };
 
   return (
     <div className="flex gap-3 w-full max-w-[637px] min-h-[450px] flex-col items-center justify-center bg-white px-4 py-6 sm:px-6 md:px-8 lg:px-10 rounded-[24px] shadow-[0px_8px_18px_0px_rgba(19,17,28,0.12)]">
-      {/* Toast Notification */}
       <AnimatePresence>
         {showToast && (
           <motion.div
@@ -129,33 +181,39 @@ const CandStepFour = () => {
               onChange={(e) =>
                 handleInputChange(index, "jobTitle", e.target.value)
               }
+              required
             />
             <Input
-              label="Company Name"
+              label="companyName Name"
               placeholder="e.g., ABC Corp"
-              value={experience.company}
+              value={experience.companyName}
               onChange={(e) =>
-                handleInputChange(index, "company", e.target.value)
+                handleInputChange(index, "companyName", e.target.value)
               }
+              required
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-            <Input
-              label="Location"
-              placeholder="Select or Enter"
+            <Dropdown
+              label="Work Location"
+              options={WORK_LOCATIONS}
               value={experience.location}
-              onChange={(e) =>
-                handleInputChange(index, "location", e.target.value)
+              onChange={(value) =>
+                handleInputChange(index, "location", value)
               }
+              placeholder="Select work location"
+              required
             />
-            <Input
+            <Dropdown
               label="Employment Type"
-              placeholder="e.g., Internship"
+              options={EMPLOYMENT_TYPES}
               value={experience.employmentType}
-              onChange={(e) =>
-                handleInputChange(index, "employmentType", e.target.value)
+              onChange={(value) =>
+                handleInputChange(index, "employmentType", value)
               }
+              placeholder="Select employment type"
+              required
             />
           </div>
 
@@ -168,6 +226,7 @@ const CandStepFour = () => {
               onChange={(e) =>
                 handleInputChange(index, "startDate", e.target.value)
               }
+              required
             />
             <Input
               label="End Date (Optional)"
@@ -188,6 +247,7 @@ const CandStepFour = () => {
               onChange={(e) =>
                 handleInputChange(index, "description", e.target.value)
               }
+              multiline
             />
           </div>
         </div>
@@ -208,7 +268,7 @@ const CandStepFour = () => {
             isLoading ? "!shadow-none" : "subtle-shadow"
           }`}
           onClick={handleSave}
-          disabled={isLoading}
+          disabled={isLoading || !validateExperiences()}
         >
           Save & Continue
           {isLoading && (

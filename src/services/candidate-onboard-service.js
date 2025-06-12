@@ -29,15 +29,13 @@ export const candidateService = {
     }
   },
 
-  // Save subsequent onboarding steps
   saveOnboardingStep: async (authId, step, stepData) => {
     await connectDB()
     try {
       let update = {}
-
       // Handle different steps
       switch (step) {
-        case 2: // Experience
+        case 2:
           const skillsArray = Array.isArray(stepData) ? stepData : [stepData]
           const cleanedSkills = skillsArray
             .map(skill =>
@@ -53,16 +51,60 @@ export const candidateService = {
             }
           }
           break
-        case 3: // Skills
-          update = { $addToSet: { skills: { $each: stepData } } }
+        case 3:
+          const experiences = Array.isArray(stepData) ? stepData : [stepData]
+          const formattedExperiences = experiences.map(exp => ({
+            jobTitle: exp.jobTitle?.trim() || '',
+            companyName: exp.companyName?.trim(),
+            location: exp.workLocation?.trim() || '',
+            employmentType: exp.employmentType?.trim() || '',
+            startDate: exp.startDate ? new Date(exp.startDate) : null,
+            endDate: exp.endDate ? new Date(exp.endDate) : null,
+            description: exp.description?.trim() || ''
+          }))
+
+          update = {
+            $set: {
+              experience: formattedExperiences
+            }
+          }
           break
         case 4: // Education
-          update = { $push: { education: stepData } }
+          const educationEntries = Array.isArray(stepData)
+            ? stepData
+            : [stepData]
+          const formattedEducation = educationEntries.map(edu => ({
+            degree: edu.degree?.trim() || '',
+            fieldOfStudy: edu.fieldOfStudy?.trim() || '',
+            institution: edu.institution?.trim() || '',
+            location: edu.location?.trim() || '',
+            startDate: edu.startDate ? new Date(edu.startDate) : null,
+            endDate: edu.endDate ? new Date(edu.endDate) : null,
+            description: edu.description?.trim() || ''
+          }))
+
+          update = {
+            $set: {
+              education: formattedEducation
+            }
+          }
           break
         case 5: // Social Links
           update = { $set: { socialLinks: stepData } }
           break
-        // Add cases for other steps as needed
+        case 6: // Job Preferences
+          update = {
+            $set: {
+              'jobPreferences.desiredTitle': stepData.desiredTitle,
+              'jobPreferences.preferredLocations': stepData.preferredLocations,
+              'jobPreferences.industries': stepData.industries,
+              'jobPreferences.salaryExpectation': stepData.salaryExpectation
+                ? Number(stepData.salaryExpectation.replace(/[^0-9.-]+/g, ''))
+                : null,
+              'jobPreferences.employmentTypes': stepData.employmentTypes
+            }
+          }
+          break
         default:
           throw new Error('Invalid step number')
       }

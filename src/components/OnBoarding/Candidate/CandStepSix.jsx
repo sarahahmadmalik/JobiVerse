@@ -7,16 +7,20 @@ import Toast from "@/components/ui/toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { useOnboarding } from "@/contexts/OnBoardingContext/OnboardingContext";
 import Spinner from "@/components/ui/spinner";
-import { Link } from "lucide-react";
+import { Link as LinkIcon } from "lucide-react";
+import { useOnboardingData } from "@/hooks/useOnboardingData";
 
 const StepSix = () => {
-  const { nextStep } = useOnboarding();
+  const { nextStep, updateFormData } = useOnboarding();
+  const { fetchData, isLoading, error } = useOnboardingData("step-six");
   const [formData, setFormData] = useState({
     linkedin: "",
     portfolio: "",
+    github: "",
+    dribbble: "",
+    behance: "",
     otherLinks: "",
   });
-  const [isLoading, setIsLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastConfig, setToastConfig] = useState({
     type: "success",
@@ -25,14 +29,40 @@ const StepSix = () => {
   });
 
   const handleChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    const updatedData = { ...formData, [field]: value };
+    setFormData(updatedData);
+    updateFormData({ socialLinks: updatedData });
   };
 
-  const handleSave = () => {
-    setIsLoading(true);
+  const validateLinks = () => {
+    // At least one link should be provided
+    return (
+      formData.linkedin.trim() || 
+      formData.portfolio.trim() || 
+      formData.github.trim() ||
+      formData.dribbble.trim() ||
+      formData.behance.trim() ||
+      formData.otherLinks.trim()
+    );
+  };
 
-    setTimeout(() => {
-      setIsLoading(false);
+  const handleSave = async () => {
+    if (!validateLinks()) {
+      setToastConfig({
+        type: "error",
+        title: "Validation Error",
+        message: "Please provide at least one social link",
+      });
+      setShowToast(true);
+      return;
+    }
+
+    try {
+      await fetchData({
+        method: "POST",
+        body: { socialLinks: formData }
+      });
+
       setToastConfig({
         type: "success",
         title: "Success!",
@@ -44,7 +74,14 @@ const StepSix = () => {
         setShowToast(false);
         nextStep();
       }, 2000);
-    }, 2000);
+    } catch (err) {
+      setToastConfig({
+        type: "error",
+        title: "Error",
+        message: error || "Failed to save your links",
+      });
+      setShowToast(true);
+    }
   };
 
   return (
@@ -71,59 +108,101 @@ const StepSix = () => {
         Showcase Your Work
       </h2>
       <p className="text-gray-500 text-center mb-4">
-        Have a portfolio, website, or LinkedIn profile? Share the link so
+        Have a portfolio, website, or professional profiles? Share the links so
         recruiters can explore your work!
       </p>
 
-      <div className="relative w-full">
-        <Input
-          label="LinkedIn Profile"
-          placeholder="Paste your LinkedIn URL"
-          className="w-full"
-          value={formData.linkedin}
-          onChange={(e) => handleChange("linkedin", e.target.value)}
-        />
-        <Link
-          className="absolute right-4  top-[2.4rem] text-gray-500"
-          size={18}
-        />
+      <div className="w-full space-y-4">
+        <div className="relative w-full">
+          <Input
+            label="LinkedIn Profile"
+            placeholder="https://linkedin.com/in/yourname"
+            className="w-full"
+            value={formData.linkedin}
+            onChange={(e) => handleChange("linkedin", e.target.value)}
+          />
+          <LinkIcon
+            className="absolute right-4 top-[2.4rem] text-gray-500"
+            size={18}
+          />
+        </div>
+
+        <div className="relative w-full">
+          <Input
+            label="Portfolio Website"
+            placeholder="https://yourportfolio.com"
+            className="w-full"
+            value={formData.portfolio}
+            onChange={(e) => handleChange("portfolio", e.target.value)}
+          />
+          <LinkIcon
+            className="absolute right-4 top-[2.4rem] text-gray-500"
+            size={18}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="relative">
+            <Input
+              label="GitHub Profile"
+              placeholder="https://github.com/username"
+              value={formData.github}
+              onChange={(e) => handleChange("github", e.target.value)}
+            />
+            <LinkIcon
+              className="absolute right-4 top-[2.4rem] text-gray-500"
+              size={18}
+            />
+          </div>
+
+          <div className="relative">
+            <Input
+              label="Dribbble Profile"
+              placeholder="https://dribbble.com/username"
+              value={formData.dribbble}
+              onChange={(e) => handleChange("dribbble", e.target.value)}
+            />
+            <LinkIcon
+              className="absolute right-4 top-[2.4rem] text-gray-500"
+              size={18}
+            />
+          </div>
+        </div>
+
+        <div className="relative w-full">
+          <Input
+            label="Behance Profile"
+            placeholder="https://behance.net/username"
+            value={formData.behance}
+            onChange={(e) => handleChange("behance", e.target.value)}
+          />
+          <LinkIcon
+            className="absolute right-4 top-[2.4rem] text-gray-500"
+            size={18}
+          />
+        </div>
+
+        <div className="relative w-full">
+          <Input
+            label="Other Links"
+            placeholder="Any other relevant links (personal website, blog, etc.)"
+            value={formData.otherLinks}
+            onChange={(e) => handleChange("otherLinks", e.target.value)}
+          />
+          <LinkIcon
+            className="absolute right-4 top-[2.4rem] text-gray-500"
+            size={18}
+          />
+        </div>
       </div>
 
-      <div className="relative w-full">
-        <Input
-          label="Portfolio Website"
-          className="w-full"
-          placeholder="Paste your portfolio URL"
-          value={formData.portfolio}
-          onChange={(e) => handleChange("portfolio", e.target.value)}
-        />
-        <Link
-          className="absolute right-4  top-[2.4rem] text-gray-500"
-          size={18}
-        />
-      </div>
-
-      <div className="relative w-full">
-        <Input
-          label="GitHub/Dribbble/Other Links"
-          className="w-full"
-          placeholder="Add more links to showcase your work"
-          value={formData.otherLinks}
-          onChange={(e) => handleChange("otherLinks", e.target.value)}
-        />
-        <Link
-          className="absolute right-4 top-[2.4rem] text-gray-500"
-          size={18}
-        />
-      </div>
-
-      <div className="w-full flex justify-end">
+      <div className="w-full flex justify-end mt-6">
         <Button
-          className={`mt-5 !font-[400] !text-[16px] flex items-center justify-center gap-3 transition-all duration-300 ${
+          className={`!font-[400] !text-[16px] flex items-center justify-center gap-3 transition-all duration-300 ${
             isLoading ? "!shadow-none" : "subtle-shadow"
           }`}
           onClick={handleSave}
-          disabled={isLoading}
+          disabled={isLoading || !validateLinks()}
         >
           Save & Continue
           {isLoading && (
