@@ -5,9 +5,13 @@ const OnboardingContext = createContext(null);
 export const OnboardingProvider = ({ children }) => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({});
+  
+ const updateFormData = (newData) => {
+    setFormData(prev => ({ ...prev, ...newData }));
+  };
 
   const nextStep = (data) => {
-    setFormData((prev) => ({ ...prev, ...data }));
+    updateFormData(data);
     setStep((prev) => prev + 1);
   };
 
@@ -21,7 +25,7 @@ export const OnboardingProvider = ({ children }) => {
 
   return (
     <OnboardingContext.Provider
-      value={{ step, setStep, formData, nextStep, prevStep, goToStep }}
+      value={{ step, setStep, formData, updateFormData, nextStep, prevStep, goToStep }}
     >
       {children}
     </OnboardingContext.Provider>

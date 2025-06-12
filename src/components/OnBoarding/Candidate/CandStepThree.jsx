@@ -1,43 +1,68 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Button from "@/components/ui/button";
 import Toast from "@/components/ui/toast";
 import Spinner from "@/components/ui/spinner";
 import { motion, AnimatePresence } from "framer-motion";
-import { useOnboarding } from "@/contexts/OnBoardingContext/OnboardingContext";
 import InputAuto from "@/components/ui/input-auto";
 import { X } from "lucide-react";
 import { SKILLS } from "@/constants/constants";
+import { useOnboardingData } from "@/hooks/useOnboardingData";
+import { useOnboarding } from "@/contexts/OnBoardingContext/OnboardingContext";
 
 const CandStepThree = () => {
-  const { nextStep } = useOnboarding();
+  const { nextStep, updateFormData } = useOnboarding();
+  const { fetchData, isLoading, error } = useOnboardingData("step-three");
   const [selectedSkills, setSelectedSkills] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [inputValue, setInputValue] = useState(""); // New state for input value
+  const inputRef = useRef(null); // Ref for the input element
   const [toastConfig, setToastConfig] = useState({
     type: "success",
     title: "",
     message: "",
   });
 
-  // Add a skill from the input field
   const addSkill = (skill) => {
     if (!selectedSkills.includes(skill)) {
-      setSelectedSkills([...selectedSkills, skill]);
+      const newSkills = [...selectedSkills, skill];
+      setSelectedSkills(newSkills);
+      updateFormData({ skills: newSkills });
+      setInputValue(""); // Clear the input value
+      inputRef.current?.blur(); // Blur the input to close dropdown
     }
   };
 
-  // Remove a skill from the selected list
   const removeSkill = (skill) => {
-    setSelectedSkills(selectedSkills.filter((s) => s !== skill));
+    const newSkills = selectedSkills.filter((s) => s !== skill);
+    setSelectedSkills(newSkills);
+    updateFormData({ skills: newSkills });
   };
 
-  const handleSave = () => {
-    setLoading(true);
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && inputValue.trim() && !selectedSkills.includes(inputValue.trim())) {
+      addSkill(inputValue.trim());
+    }
+  };
 
-    setTimeout(() => {
-      setLoading(false);
+  const handleSave = async () => {
+    if (selectedSkills.length === 0) {
+      setToastConfig({
+        type: "error",
+        title: "Error",
+        message: "Please add at least one skill",
+      });
+      setShowToast(true);
+      return;
+    }
+
+    try {
+      await fetchData({
+        method: "POST",
+        body: { skills: selectedSkills }
+      });
+
       setToastConfig({
         type: "success",
         title: "Success!",
@@ -46,10 +71,16 @@ const CandStepThree = () => {
       setShowToast(true);
 
       setTimeout(() => {
-        setShowToast(false);
-        nextStep({ selectedSkills });
+        nextStep({ skills: selectedSkills });
       }, 2000);
-    }, 2000);
+    } catch (err) {
+      setToastConfig({
+        type: "error",
+        title: "Error",
+        message: error || "Failed to save your skills",
+      });
+      setShowToast(true);
+    }
   };
 
   return (
@@ -76,17 +107,20 @@ const CandStepThree = () => {
         Show Off Your Skills!
       </h2>
       <p className="text-[#161819AB] font-[300] text-center mb-6">
-        Let recruiters know what you’re best at. Add your top skills to stand
+        Let recruiters know what you're best at. Add your top skills to stand
         out!
       </p>
 
-      {/* Autocomplete Input for Skill Selection */}
       <div className="w-full px-4">
         <InputAuto
+          ref={inputRef}
           label="Skills"
           placeholder="Type a skill, e.g., Project Management"
           suggestions={SKILLS}
           onSelect={addSkill}
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown}
         />
       </div>
 
@@ -113,13 +147,13 @@ const CandStepThree = () => {
       <div className="flex justify-center sm:justify-end mt-5 mb-5 sm:mt-3 sm:mb-0 w-full px-4">
         <Button
           className={`!font-[400] !text-[16px] flex items-center justify-center gap-3 transition-all duration-300 ${
-            loading ? "!shadow-none" : "subtle-shadow"
+            isLoading ? "!shadow-none" : "subtle-shadow"
           }`}
           onClick={handleSave}
-          disabled={loading}
+          disabled={isLoading || selectedSkills.length === 0}
         >
           Save & Continue
-          {loading && (
+          {isLoading && (
             <Spinner className="transition-opacity duration-300 opacity-100" />
           )}
         </Button>
