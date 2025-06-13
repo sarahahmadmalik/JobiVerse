@@ -1,3 +1,5 @@
+"use client";
+
 import { useOnboarding } from "@/contexts/OnBoardingContext/OnboardingContext";
 import { CheckCircle, Pencil } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -6,10 +8,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Toast from "@/components/ui/toast";
 import Spinner from "@/components/ui/spinner";
+import { useOnboardingData } from "@/hooks/useOnboardingData";
 
 const StepFour = () => {
   const { goToStep } = useOnboarding();
-  const [loading, setLoading] = useState(false);
+  const { fetchData, isLoading, error } = useOnboardingData("step-four", "recruiter");
   const [showToast, setShowToast] = useState(false);
   const [toastConfig, setToastConfig] = useState({
     type: "success",
@@ -24,27 +27,38 @@ const StepFour = () => {
   ];
 
   const handleEdit = (section) => {
-    console.log(section.id);
     goToStep(section.id);
   };
 
-  const handleSave = () => {
-    setLoading(true);
+  const handleCompleteOnboarding = async () => {
+    try {
+      // Call the complete onboarding API
+      const response = await fetchData({
+        method: "PUT"
+      });
 
-    setTimeout(() => {
-      setLoading(false);
+      if (response.error) {
+        throw new Error(response.error);
+      }
+
       setToastConfig({
         type: "success",
-        title: "Success!",
-        message: "Your details have been saved successfully.",
+        title: "Congratulations!",
+        message: "Your company profile is complete and ready to use.",
       });
       setShowToast(true);
 
       setTimeout(() => {
-        setShowToast(false);
-        router.push("/home"); 
+        router.push("/recruiter/home");
       }, 2000);
-    }, 2000);
+    } catch (err) {
+      setToastConfig({
+        type: "error",
+        title: "Error",
+        message: error || "Failed to complete onboarding",
+      });
+      setShowToast(true);
+    }
   };
 
   return (
@@ -68,7 +82,7 @@ const StepFour = () => {
       </AnimatePresence>
 
       <h2 className="text-2xl font-bold text-gray-900 text-center">
-        You’re All Set Up
+        You're All Set Up
       </h2>
 
       <p className="text-gray-500 text-center mb-4">
@@ -96,13 +110,13 @@ const StepFour = () => {
       <div className="flex justify-center sm:justify-end mt-5 mb-5 sm:mt-3 sm:mb-0 w-full px-4">
         <Button
           className={`!font-[400] !text-[16px] flex items-center justify-center gap-3 transition-all duration-300 ${
-            loading ? "!shadow-none" : "subtle-shadow"
+            isLoading ? "!shadow-none" : "subtle-shadow"
           }`}
-          onClick={handleSave}
-          disabled={loading}
+          onClick={handleCompleteOnboarding}
+          disabled={isLoading}
         >
           Save & Complete
-          {loading && <Spinner />}
+          {isLoading && <Spinner />}
         </Button>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { candidateService } from "@/services/onboard-service";
+import { recruiterService } from "@/services/onboard-service";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
@@ -13,31 +13,44 @@ export async function POST(request) {
   }
 
   try {
-    const { skills } = await request.json();
+    const { companyDescription, socialLinks, logoUrl } = await request.json();
     
-    if (!skills || !Array.isArray(skills)) {
-      return new Response(JSON.stringify({ error: "Skills must be provided as an array" }), {
+    // Basic validation
+    if (!companyDescription || typeof companyDescription !== 'string') {
+      return new Response(JSON.stringify({ error: "Company description is required" }), {
         status: 400,
         headers: { "Content-Type": "application/json" }
       });
     }
 
-    const candidate = await candidateService.saveOnboardingStep(
+    if (!socialLinks || typeof socialLinks !== 'object') {
+      return new Response(JSON.stringify({ error: "Social links must be provided" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    // Save the onboarding step data
+    const recruiter = await recruiterService.saveOnboardingStep(
       session.user.id,
-      2, // Step number for skills
-      skills
+      3, // Step number for branding
+      { companyDescription, socialLinks, logoUrl }
     );
     
     return new Response(JSON.stringify({
       success: true,
-      skills: candidate.skills
+      company: {
+        description: recruiter.company.description,
+        socialLinks: recruiter.company.socialLinks,
+        logo: recruiter.company.logo
+      }
     }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
     });
   } catch (error) {
     return new Response(JSON.stringify({ 
-      error: error.message || "Failed to save skills"
+      error: error.message || "Failed to save branding details"
     }), {
       status: 500,
       headers: { "Content-Type": "application/json" }
@@ -56,18 +69,26 @@ export async function POST(request) {
 //   }
 
 //   try {
-//     const candidate = await candidateService.getOnboardingProgress(session.user.id);
+//     const recruiter = await recruiterService.getOnboardingProgress(session.user.id);
     
 //     return new Response(JSON.stringify({
 //       success: true,
-//       skills: candidate?.skills || []
+//       company: {
+//         description: recruiter?.company?.description || '',
+//         socialLinks: recruiter?.company?.socialLinks || {
+//           twitter: '',
+//           facebook: '',
+//           instagram: '',
+//           linkedin: ''
+//         }
+//       }
 //     }), {
 //       status: 200,
 //       headers: { "Content-Type": "application/json" }
 //     });
 //   } catch (error) {
 //     return new Response(JSON.stringify({ 
-//       error: error.message || "Failed to fetch skills"
+//       error: error.message || "Failed to fetch branding details"
 //     }), {
 //       status: 500,
 //       headers: { "Content-Type": "application/json" }

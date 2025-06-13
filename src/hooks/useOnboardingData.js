@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 
-export const useOnboardingData = (endpoint) => {
+export const useOnboardingData = (endpoint, userType = "candidate") => {
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -15,6 +15,11 @@ export const useOnboardingData = (endpoint) => {
       return;
     }
 
+    // Validate userType
+    const validUserType = ["candidate", "recruiter"].includes(userType) 
+      ? userType 
+      : "candidate";
+
     setIsLoading(true);
     setError(null);
 
@@ -23,11 +28,14 @@ export const useOnboardingData = (endpoint) => {
         "Content-Type": "application/json",
       };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/onboarding/candidate/${endpoint}`, {
-        method: options.method || "POST",
-        headers: { ...defaultHeaders, ...options.headers },
-        body: options.body ? JSON.stringify(options.body) : undefined,
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/onboarding/${validUserType}/${endpoint}`,
+        {
+          method: options.method || "POST",
+          headers: { ...defaultHeaders, ...options.headers },
+          body: options.body ? JSON.stringify(options.body) : undefined,
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

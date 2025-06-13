@@ -1,4 +1,4 @@
-import { candidateService } from "@/services/candidate-onboard-service";
+import { candidateService } from "@/services/onboard-service";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 

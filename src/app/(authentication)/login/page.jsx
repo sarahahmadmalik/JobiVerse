@@ -21,49 +21,87 @@ const Login = () => {
   const router = useRouter();
 
 const handleLogin = async (e) => {
-  e.preventDefault();
-  setEmailLoading(true);
-  setError(null);
+    e.preventDefault();
+    setEmailLoading(true);
+    setError(null);
 
-  try {
-    const result = await signIn("credentials", {
-      redirect: false,
-      email,
-      password,
-      callbackUrl: "/home" // Default redirect
-    });
+    try {
+      const result = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      });
 
-    if (result?.error) {
-      setError(result.error);
-    } else {
+      if (result?.error) {
+        setError(result.error);
+        return;
+      }
+
+      // Get session after successful login
       const response = await fetch('/api/auth/session');
       const session = await response.json();
-      console.log(session)
-      if (session?.user?.isFirstLogin) {
-        // Redirect to onboarding for first-time users
+      
+      if (!session?.user) {
+        setError("Login failed. Please try again.");
+        return;
+      }
+
+      if (session.user.isFirstLogin) {
+        // Clear local storage before onboarding
+        if (typeof window !== 'undefined') {
+          localStorage.clear();
+        }
         router.push("/onboarding");
       } else {
-        // Regular users go to home
-        router.push("/home");
+        // Redirect based on role
+        const homePath = session.user.role === 'recruiter' 
+          ? '/recruiter/home' 
+          : '/home';
+        router.push(homePath);
       }
+    } catch (err) {
+      setError("An unexpected error occurred");
+    } finally {
+      setEmailLoading(false);
     }
-  } catch (err) {
-    setError("An unexpected error occurred");
-  } finally {
-    setEmailLoading(false);
-  }
-};
+  };
 
-const handleGoogleLogin = async () => {
-  setGoogleLoading(true);
-  try {
-    await signIn("google", { callbackUrl: "/home" });
-  } catch (err) {
-    setError("Failed to login with Google");
-  } finally {
-    setGoogleLoading(false);
-  }
-};
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    try {
+      await signIn("google", { 
+        redirect: false 
+      }).then(async (result) => {
+        if (result?.error) {
+          setError(result.error);
+          return;
+        }
+
+        // Get session after successful login
+        const response = await fetch('/api/auth/session');
+        const session = await response.json();
+        
+        if (session?.user?.isFirstLogin) {
+          // Clear local storage before onboarding
+          if (typeof window !== 'undefined') {
+            localStorage.clear();
+          }
+          router.push("/onboarding");
+        } else {
+          // Redirect based on role
+          const homePath = session.user.role === 'recruiter' 
+            ? '/recruiter/home' 
+            : '/home';
+          router.push(homePath);
+        }
+      });
+    } catch (err) {
+      setError("Failed to login with Google");
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
 
   return (
     <div className="flex h-screen">
