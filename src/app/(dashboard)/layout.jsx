@@ -5,10 +5,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import Sidebar from "@/components/dashboard/shared/Sidebar";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export default function DashboardLayout({ children }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+    const { data: session } = useSession();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -33,7 +35,11 @@ export default function DashboardLayout({ children }) {
     }
     
     if (pathname === "/home" || pathname === "/recruiter/home") {
-      return "Welcome back, User!";
+      if (session?.user?.name) {
+        const firstName = session.user.name.split(' ')[0];
+        return `Welcome back, ${firstName}!`;
+      }
+      return "Welcome back!";
     }
   
     const segments = pathname

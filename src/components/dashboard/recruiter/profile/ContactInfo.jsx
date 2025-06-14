@@ -1,8 +1,17 @@
 "use client";
 import { useState } from "react";
+import Button from "@/components/ui/button";
+import Input from "@/components/ui/input";
 
 export default function ContactInfoSection({ data, onUpdate, editMode }) {
-  const [formData, setFormData] = useState(data);
+  const [formData, setFormData] = useState({
+    primaryEmail: data.primaryEmail || '',
+    phone: data.phone || '',
+    address: data.address || '',
+    hrEmail: data.hrEmail || '',
+    generalEmail: data.generalEmail || '',
+    location: data.location || ''
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,76 +31,75 @@ export default function ContactInfoSection({ data, onUpdate, editMode }) {
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Primary Email</label>
-              <input
+              <Input
+                label="Primary Email"
                 type="email"
                 name="primaryEmail"
                 value={formData.primaryEmail}
                 onChange={handleChange}
-                className="w-full border rounded-md px-3 py-2"
+                placeholder="contact@company.com"
                 required
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-              <input
+              <Input
+                label="Phone Number"
                 type="tel"
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                className="w-full border rounded-md px-3 py-2"
+                placeholder="+1 (123) 456-7890"
               />
             </div>
             
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-              <input
-                type="text"
+              <Input
+                label="Office Address"
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
-                className="w-full border rounded-md px-3 py-2"
+                placeholder="123 Business St, City, Country"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">HR Email</label>
-              <input
+              <Input
+                label="HR Department Email"
                 type="email"
                 name="hrEmail"
                 value={formData.hrEmail}
                 onChange={handleChange}
-                className="w-full border rounded-md px-3 py-2"
+                placeholder="hr@company.com"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">General Email</label>
-              <input
+              <Input
+                label="General Inquiries Email"
                 type="email"
                 name="generalEmail"
                 value={formData.generalEmail}
                 onChange={handleChange}
-                className="w-full border rounded-md px-3 py-2"
+                placeholder="info@company.com"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <Input
+                label="Location (City, Country)"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                placeholder="San Francisco, USA"
               />
             </div>
           </div>
           
-          <div className="mt-6 flex justify-end space-x-3">
-            <button
-              type="button"
-              onClick={() => setFormData(data)}
-              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
-            >
+          <div className="mt-6 flex justify-end">
+            <Button type="submit">
               Save Changes
-            </button>
+            </Button>
           </div>
         </form>
       ) : (
@@ -99,16 +107,18 @@ export default function ContactInfoSection({ data, onUpdate, editMode }) {
           <div className="space-y-4">
             <div>
               <h3 className="text-sm font-medium text-gray-500">Primary Email</h3>
-              <p className="mt-1 text-sm">
-                <a href={`mailto:${data.primaryEmail}`} className="text-blue-600 hover:underline">
-                  {data.primaryEmail}
-                </a>
+              <p className="mt-1 text-sm text-gray-900">
+                {data.primaryEmail ? (
+                  <a href={`mailto:${data.primaryEmail}`} className="text-blue-600 hover:underline">
+                    {data.primaryEmail}
+                  </a>
+                ) : 'Not specified'}
               </p>
             </div>
             
             <div>
               <h3 className="text-sm font-medium text-gray-500">Phone Number</h3>
-              <p className="mt-1 text-sm">
+              <p className="mt-1 text-sm text-gray-900">
                 {data.phone ? (
                   <a href={`tel:${data.phone.replace(/[^0-9+]/g, '')}`} className="text-blue-600 hover:underline">
                     {data.phone}
@@ -118,15 +128,15 @@ export default function ContactInfoSection({ data, onUpdate, editMode }) {
             </div>
             
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Address</h3>
-              <p className="mt-1 text-sm">{data.address || 'Not specified'}</p>
+              <h3 className="text-sm font-medium text-gray-500">Office Address</h3>
+              <p className="mt-1 text-sm text-gray-900">{data.address || 'Not specified'}</p>
             </div>
           </div>
           
           <div className="space-y-4">
             <div>
-              <h3 className="text-sm font-medium text-gray-500">HR Email</h3>
-              <p className="mt-1 text-sm">
+              <h3 className="text-sm font-medium text-gray-500">HR Department</h3>
+              <p className="mt-1 text-sm text-gray-900">
                 {data.hrEmail ? (
                   <a href={`mailto:${data.hrEmail}`} className="text-blue-600 hover:underline">
                     {data.hrEmail}
@@ -136,8 +146,8 @@ export default function ContactInfoSection({ data, onUpdate, editMode }) {
             </div>
             
             <div>
-              <h3 className="text-sm font-medium text-gray-500">General Email</h3>
-              <p className="mt-1 text-sm">
+              <h3 className="text-sm font-medium text-gray-500">General Inquiries</h3>
+              <p className="mt-1 text-sm text-gray-900">
                 {data.generalEmail ? (
                   <a href={`mailto:${data.generalEmail}`} className="text-blue-600 hover:underline">
                     {data.generalEmail}
@@ -145,6 +155,11 @@ export default function ContactInfoSection({ data, onUpdate, editMode }) {
                 ) : 'Not specified'}
               </p>
             </div>
+
+            {/* <div>
+              <h3 className="text-sm font-medium text-gray-500">Location</h3>
+              <p className="mt-1 text-sm text-gray-900">{data.location || 'Not specified'}</p>
+            </div> */}
           </div>
         </div>
       )}

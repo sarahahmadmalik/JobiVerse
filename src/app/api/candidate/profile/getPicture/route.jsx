@@ -27,7 +27,7 @@ export async function GET(request) {
     }
 
     return NextResponse.json({
-      imageUrl: candidate.profilePicture || null,
+      imageUrl: candidate.picture || null,
       name: `${candidate.firstName} ${candidate.lastName}` || null
     });
   } catch (error) {

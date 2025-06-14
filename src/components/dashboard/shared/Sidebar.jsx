@@ -22,11 +22,11 @@ export default function Sidebar () {
         let response
         if (session.user.role === 'candidate') {
           response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/candidate/profile?id=${session.user.id}`
+            `${process.env.NEXT_PUBLIC_API_URL}/candidate/profile/getPicture?id=${session.user.id}`
           )
         } else if (session.user.role === 'recruiter') {
           response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/recruiter/profile?id=${session.user.id}`
+            `${process.env.NEXT_PUBLIC_API_URL}/recruiter/profile/getLogo?id=${session.user.id}`
           )
         }
 

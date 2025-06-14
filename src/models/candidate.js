@@ -28,6 +28,10 @@ const CandidateSchema = new mongoose.Schema(
         "Please enter a valid phone number",
       ],
     },
+      picture: {
+        type: String,
+        default: ''
+      },
     location: {
       type: String,
       trim: true,
@@ -197,7 +201,7 @@ const CandidateSchema = new mongoose.Schema(
       employmentTypes: [
         {
           type: String,
-          enum: ["Full-time", "Part-time", "Contract", "Temporary"],
+          enum: ["Full-time", "Part-time", "Contract", "Temporary", "Freelance"],
         },
       ],
     },

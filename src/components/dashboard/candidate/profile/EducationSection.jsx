@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import { TrashIcon } from "lucide-react";
@@ -10,24 +10,62 @@ export default function EducationSection({ data, onUpdate, editMode }) {
     const [newEducation, setNewEducation] = useState({
       institution: '',
       degree: '',
-      field: '',
-      startYear: '',
-      endYear: '',
+      fieldOfStudy: '',
+      location: '',
+      startDate: '',
+      endDate: '',
       description: ''
     });
     const [isAdding, setIsAdding] = useState(false);
   
+    // Format degree display
+    const formatDegree = (degree, field) => {
+      if (!degree) return '';
+      
+      // Clean up degree string (remove 's or ' if present)
+      const cleanDegree = degree.replace(/'s|'/, '').trim();
+      
+      // If field exists, combine them
+      if (field) {
+        return `${cleanDegree} in ${field}`;
+      }
+      return cleanDegree;
+    };
+
+    // Format date to "Month Day, Year" format
+    const formatDisplayDate = (dateString) => {
+      if (!dateString) return '';
+      
+      try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+      } catch (e) {
+        return dateString; // Return as-is if invalid date
+      }
+    };
+
     const handleAdd = () => {
       if (newEducation.institution && newEducation.degree) {
-        const updated = [...educations, { ...newEducation, id: Date.now() }];
+        const updated = [...educations, { 
+          ...newEducation, 
+          id: Date.now(),
+          // Convert dates to ISO format for storage
+          startDate: newEducation.startDate ? new Date(newEducation.startDate).toISOString() : '',
+          endDate: newEducation.endDate ? new Date(newEducation.endDate).toISOString() : ''
+        }];
         setEducations(updated);
         onUpdate(updated);
         setNewEducation({
           institution: '',
           degree: '',
-          field: '',
-          startYear: '',
-          endYear: '',
+          fieldOfStudy: '',
+          location: '',
+          startDate: '',
+          endDate: '',
           description: ''
         });
         setIsAdding(false);
@@ -71,28 +109,39 @@ export default function EducationSection({ data, onUpdate, editMode }) {
                 type="text"
                 value={newEducation.degree}
                 onChange={(e) => setNewEducation({...newEducation, degree: e.target.value})}
+                placeholder="e.g. Bachelor's, Master's, PhD"
                 className={"!px-3"}
               />
               <Input
                 label="Field of Study"
                 type="text"
-                value={newEducation.field}
-                onChange={(e) => setNewEducation({...newEducation, field: e.target.value})}
+                value={newEducation.fieldOfStudy}
+                onChange={(e) => setNewEducation({...newEducation, fieldOfStudy: e.target.value})}
+                placeholder="e.g. Computer Science"
+                className={"!px-3"}
+              />
+              <Input
+                label="Location"
+                type="text"
+                value={newEducation.location}
+                onChange={(e) => setNewEducation({...newEducation, location: e.target.value})}
+                placeholder="e.g. City, Country"
                 className={"!px-3"}
               />
               <div className="grid grid-cols-2 gap-2">
                 <Input
-                  label="Start Year"
-                  type="text"
-                  value={newEducation.startYear}
-                  onChange={(e) => setNewEducation({...newEducation, startYear: e.target.value})}
+                  label="Start Date"
+                  type="date"
+                  value={newEducation.startDate}
+                  onChange={(e) => setNewEducation({...newEducation, startDate: e.target.value})}
                   className={"!px-3"}
                 />
                 <Input
-                  label="End Year"
-                  type="text"
-                  value={newEducation.endYear}
-                  onChange={(e) => setNewEducation({...newEducation, endYear: e.target.value})}
+                  label="End Date"
+                  type="date"
+                  value={newEducation.endDate}
+                  onChange={(e) => setNewEducation({...newEducation, endDate: e.target.value})}
+                  placeholder="Leave blank if current"
                   className={"!px-3"}
                 />
               </div>
@@ -143,12 +192,15 @@ export default function EducationSection({ data, onUpdate, editMode }) {
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
                     <h3 className="font-medium">
-                      {edu.degree}{edu.field && ` in ${edu.field}`}
+                      {formatDegree(edu.degree, edu.fieldOfStudy)}
                     </h3>
                     <p className="text-gray-600">{edu.institution}</p>
-                    {(edu.startYear || edu.endYear) && (
+                    {edu.location && (
+                      <p className="text-gray-500 text-sm">{edu.location}</p>
+                    )}
+                    {(edu.startDate || edu.endDate) && (
                       <p className="text-sm text-gray-500">
-                        {edu.startYear} {edu.endYear && `- ${edu.endYear}`}
+                        {formatDisplayDate(edu.startDate)} {edu.endDate ? `- ${formatDisplayDate(edu.endDate)}` : "- Present"}
                       </p>
                     )}
                     {edu.description && (

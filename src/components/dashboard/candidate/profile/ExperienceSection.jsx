@@ -8,7 +8,7 @@ export default function ExperienceSection({ data, onUpdate, editMode }) {
   const [experiences, setExperiences] = useState(data);
   const [newExperience, setNewExperience] = useState({
     jobTitle: '',
-    company: '',
+    companyName: '',
     location: '',
     employmentType: '',
     startDate: '',
@@ -18,13 +18,16 @@ export default function ExperienceSection({ data, onUpdate, editMode }) {
   const [isAdding, setIsAdding] = useState(false);
 
   const handleAdd = () => {
-    if (newExperience.jobTitle && newExperience.company) {
-      const updated = [...experiences, { ...newExperience, id: Date.now() }];
+    if (newExperience.jobTitle && newExperience.companyName) {
+      const updated = [...experiences, { 
+        ...newExperience, 
+        id: Date.now() + Math.random().toString(36).substring(2) // More unique ID
+      }];
       setExperiences(updated);
       onUpdate(updated);
       setNewExperience({
         jobTitle: '',
-        company: '',
+        companyName: '',
         location: '',
         employmentType: '',
         startDate: '',
@@ -71,8 +74,8 @@ export default function ExperienceSection({ data, onUpdate, editMode }) {
               label="Company Name*"
               type="text"
               placeholder="e.g., ABC Corp"
-              value={newExperience.company}
-              onChange={(e) => setNewExperience({...newExperience, company: e.target.value})}
+              value={newExperience.companyName}
+              onChange={(e) => setNewExperience({...newExperience, companyName: e.target.value})}
               className={"!px-3"}
             />
             <Input
@@ -133,9 +136,9 @@ export default function ExperienceSection({ data, onUpdate, editMode }) {
             </button>
             <Button
               onClick={handleAdd}
-              disabled={!newExperience.jobTitle || !newExperience.company}
+              disabled={!newExperience.jobTitle || !newExperience.companyName}
               className={`!px-3 py-1 text-white !shadow-none !rounded !text-sm ${
-                !newExperience.jobTitle || !newExperience.company
+                !newExperience.jobTitle || !newExperience.companyName
                   ? 'cursor-not-allowed'
                   : ''
               }`}
@@ -151,12 +154,12 @@ export default function ExperienceSection({ data, onUpdate, editMode }) {
           <p className="text-gray-500">No work experience added yet</p>
         ) : (
           experiences.map(exp => (
-            <div key={exp.id} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0 group">
+            <div key={exp.id || exp._id || `${exp.jobTitle}-${exp.companyName}`} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0 group">
               <div className="flex justify-between items-start">
                 <div className="space-y-1">
                   <h3 className="font-medium">{exp.jobTitle}</h3>
                   <p className="text-gray-600">
-                    {exp.company}
+                    {exp.companyName}
                     {exp.location && ` | ${exp.location}`}
                   </p>
                   {(exp.startDate || exp.endDate) && (

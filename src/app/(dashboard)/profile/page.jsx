@@ -1,110 +1,139 @@
 "use client";
-import { useState } from "react";
-// import { useSession } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import ProfileHeader from "@/components/dashboard/candidate/profile/ProfileHeader";
 import PersonalInfoSection from "@/components/dashboard/candidate/profile/PersonalInfoSection";
 import EducationSection from "@/components/dashboard/candidate/profile/EducationSection";
-import ExperienceSection from "@//components/dashboard/candidate/profile/ExperienceSection";
+import ExperienceSection from "@/components/dashboard/candidate/profile/ExperienceSection";
 import SkillsSection from "@/components/dashboard/candidate/profile/SkillsSection";
 import PortfolioSection from "@/components/dashboard/candidate/profile/PortfolioSection";
 import JobPreferencesSection from "@/components/dashboard/candidate/profile/JobPreferencesSection";
-// import CompanyInfoSection from "@/components/profile/recruiter/CompanyInfoSection";
-// import HiringPreferencesSection from "@/components/profile/recruiter/HiringPreferencesSection";
-// import OpenPositionsSection from "@/components/profile/recruiter/OpenPositionsSection";
+import { getCandidateProfile, updateCandidateProfile } from "@/services/candidate-service";
+import Loader from "@/components/ui/loader";
 
 export default function ProfilePage() {
-//   const { data: session } = useSession();
-  const isCandidate =  "candidate";
-  
   const [activeTab, setActiveTab] = useState("personal");
   const [editMode, setEditMode] = useState(false);
-
-  // Candidate state
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { data: session } = useSession();
+  
   const [candidateData, setCandidateData] = useState({
-    name: "Areeba Nazim",
-    title: "Frontend Developer",
-    email: "areeba@gmail.com",
-    phone: "+1219168192",
-    location: "San Francisco, CA",
-    bio: "Passionate frontend developer with 3+ years of experience building responsive web applications using React and Next.js.",
+    name: "",
+    firstName: "",
+    lastName: "",
+    title: "",
+    email: "",
+    phone: "",
+    location: "",
     avatar: null,
-    coverImage: null,
-    education: [
-      {
-        id: 1,
-        institution: "Stanford University",
-        degree: "Master of Computer Science",
-        field: "Computer Science",
-        startYear: "2018",
-        endYear: "2020",
-        description: "Specialized in Human-Computer Interaction"
-      }
-    ],
-    experience: [
-      {
-        id: 1,
-        company: "TechCorp",
-        position: "Frontend Developer",
-        startDate: "2020-06",
-        endDate: "Present",
-        description: "Developed and maintained company's main product using React and TypeScript"
-      }
-    ],
-    skills: ["JavaScript", "React", "Next.js", "TypeScript", "Tailwind CSS"],
+    education: [],
+    experience: [],
+    skills: [],
     portfolioLinks: {
-      linkedin: "linkedin.com/in/areeba",
-      github: "github.com/areeba",
+      linkedin: "",
+      github: "",
       dribbble: "",
       behance: ""
     },
     jobPreferences: {
-      seeking: true,
-      availability: "Immediately",
-      employmentTypes: ["Full Time", "Part Time"],
-      remotePreference: "Hybrid",
-      desiredSalary: "$80,000 - $100,000",
-      industries: ["Technology", "SaaS"]
+      employmentTypes: [],
+      preferredLocations: [],
+      desiredTitle: "",
+      desiredSalary: "",
+      industries: []
     }
   });
 
-  // Recruiter state
-  const [recruiterData, setRecruiterData] = useState({
-    name: "Alex Johnson",
-    title: "Technical Recruiter",
-    email: "alex@techhiring.com",
-    phone: "+1219168193",
-    company: "TechHiring Inc.",
-    companyLogo: "/images/company-logo.jpg",
-    companyDescription: "Specialized in connecting tech talent with innovative companies",
-    hiringPreferences: {
-      roles: ["Frontend", "Backend", "Full Stack"],
-      experienceLevels: ["Mid-level", "Senior"],
-      locations: ["Remote", "San Francisco", "New York"],
-      hiringVolume: "50+ positions annually"
-    },
-    openPositions: [
-      {
-        id: 1,
-        title: "Senior React Developer",
-        type: "Full Time",
-        location: "Remote",
-        posted: "2 days ago"
+  useEffect(() => {
+    const fetchCandidateData = async () => {
+      try {
+        setLoading(true);
+        if (!session?.user?.id) return;
+        
+        const data = await getCandidateProfile(session.user.id);
+        
+        // Transform API response to match component expectations
+        setCandidateData({
+          name: `${data.personal?.firstName || ''} ${data.personal?.lastName || ''}`.trim(),
+          firstName: data.personal?.firstName || '',
+          lastName: data.personal?.lastName || '',
+          title: data.jobPreferences?.desiredTitle || '',
+          email: data.personal?.email || '',
+          phone: data.personal?.phone || '',
+          location: data.personal?.location || '',
+          avatar: data.personal?.avatar || null,
+          education: data.education || [],
+          experience: data.experience || [],
+          skills: data.skills || [],
+          portfolioLinks: {
+            linkedin: data.socialLinks?.linkedin || '',
+            github: data.socialLinks?.github || '',
+            dribbble: data.socialLinks?.dribbble || '',
+            behance: ''
+          },
+          jobPreferences: {
+            employmentTypes: data.jobPreferences?.employmentTypes || [],
+            preferredLocations: data.jobPreferences?.preferredLocations || [],
+            desiredTitle: data.jobPreferences?.desiredTitle || "",
+            desiredSalary: data.jobPreferences?.salaryExpectation 
+              ? `$${data.jobPreferences.salaryExpectation}` 
+              : "",
+            industries: data.jobPreferences?.industries || []
+          }
+        });
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching candidate data:', err);
+      } finally {
+        setLoading(false);
       }
-    ]
-  });
+    };
 
-  const handleCandidateUpdate = (section, data) => {
-    setCandidateData(prev => ({
-      ...prev,
-      [section]: data
-    }));
-  };
+    fetchCandidateData();
+  }, [session]);
 
-  const handleRecruiterUpdate = (section, data) => {
-    setRecruiterData(prev => ({
-      ...prev,
-      [section]: data
-    }));
+  const handleUpdate = async (section, data) => {
+    try {
+      if (!session?.user?.id) return;
+      
+      setLoading(true);
+      
+      let apiData = data;
+      console.log(data)
+      // Transform data for API based on section
+      if (section === 'personal') {
+        apiData = {
+          firstName: data.firstName || '',
+          lastName: data.lastName || '',
+          phone: data.phone,
+          location: data.location
+        };
+        
+        // Update local state with full name
+        setCandidateData(prev => ({
+          ...prev,
+          [section]: {
+            ...prev[section],
+            ...data
+          },
+          name: `${data.firstName || ''} ${data.lastName || ''}`.trim()
+        }));
+      } else {
+        // For other sections, update directly
+        setCandidateData(prev => ({
+          ...prev,
+          [section]: data
+        }));
+      }
+      
+      await updateCandidateProfile(session.user.id, section, apiData);
+    } catch (err) {
+      setError(err.message);
+      console.error('Error updating candidate data:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleEditMode = () => {
@@ -120,20 +149,35 @@ export default function ProfilePage() {
     { id: "preferences", label: "Job Preferences" }
   ];
 
-  const recruiterTabs = [
-    { id: "company", label: "Company Info" },
-    { id: "preferences", label: "Hiring Preferences" },
-    { id: "positions", label: "Open Positions" }
-  ];
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader/>
+      </div>
+    );
+  }
 
-  const tabs = isCandidate ? candidateTabs : recruiterTabs;
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center text-red-500">
+          <p>Error loading profile: {error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Profile Header */}
       <ProfileHeader 
-        user={isCandidate ? candidateData : recruiterData} 
-        isCandidate={isCandidate}
+        user={candidateData} 
+        isCandidate={true}
         editMode={editMode}
         toggleEditMode={toggleEditMode}
       />
@@ -145,7 +189,7 @@ export default function ProfilePage() {
             <div className="bg-white rounded-lg shadow-sm p-4 sticky top-8">
               <h2 className="text-lg font-semibold mb-4">Profile Sections</h2>
               <nav className="space-y-2">
-                {tabs.map(tab => (
+                {candidateTabs.map(tab => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
@@ -164,75 +208,47 @@ export default function ProfilePage() {
 
           {/* Main content */}
           <div className="md:w-3/4 lg:w-4/5">
-            {isCandidate ? (
-              <>
-                {activeTab === "personal" && (
-                  <PersonalInfoSection 
-                    data={candidateData} 
-                    onUpdate={(data) => handleCandidateUpdate('personal', data)}
-                    editMode={editMode}
-                  />
-                )}
-                {activeTab === "education" && (
-                  <EducationSection 
-                    data={candidateData.education} 
-                    onUpdate={(data) => handleCandidateUpdate('education', data)}
-                    editMode={editMode}
-                  />
-                )}
-                {activeTab === "experience" && (
-                  <ExperienceSection 
-                    data={candidateData.experience} 
-                    onUpdate={(data) => handleCandidateUpdate('experience', data)}
-                    editMode={editMode}
-                  />
-                )}
-                {activeTab === "skills" && (
-                  <SkillsSection 
-                    data={candidateData.skills} 
-                    onUpdate={(data) => handleCandidateUpdate('skills', data)}
-                    editMode={editMode}
-                  />
-                )}
-                {activeTab === "portfolio" && (
-                  <PortfolioSection 
-                    data={candidateData.portfolioLinks} 
-                    onUpdate={(data) => handleCandidateUpdate('portfolioLinks', data)}
-                    editMode={editMode}
-                  />
-                )}
-                {activeTab === "preferences" && (
-                  <JobPreferencesSection 
-                    data={candidateData.jobPreferences} 
-                    onUpdate={(data) => handleCandidateUpdate('jobPreferences', data)}
-                    editMode={editMode}
-                  />
-                )}
-              </>
-            ) : (
-              <>
-                {/* {activeTab === "company" && (
-                  <CompanyInfoSection 
-                    data={recruiterData} 
-                    onUpdate={handleRecruiterUpdate}
-                    editMode={editMode}
-                  />
-                )}
-                {activeTab === "preferences" && (
-                  <HiringPreferencesSection 
-                    data={recruiterData.hiringPreferences} 
-                    onUpdate={(data) => handleRecruiterUpdate('hiringPreferences', data)}
-                    editMode={editMode}
-                  />
-                )}
-                {activeTab === "positions" && (
-                  <OpenPositionsSection 
-                    data={recruiterData.openPositions} 
-                    onUpdate={(data) => handleRecruiterUpdate('openPositions', data)}
-                    editMode={editMode}
-                  />
-                )} */}
-              </>
+            {activeTab === "personal" && (
+              <PersonalInfoSection 
+                data={candidateData} 
+                onUpdate={(data) => handleUpdate('personal', data)}
+                editMode={editMode}
+              />
+            )}
+            {activeTab === "education" && (
+              <EducationSection 
+                data={candidateData.education} 
+                onUpdate={(data) => handleUpdate('education', data)}
+                editMode={editMode}
+              />
+            )}
+            {activeTab === "experience" && (
+              <ExperienceSection 
+                data={candidateData.experience} 
+                onUpdate={(data) => handleUpdate('experience', data)}
+                editMode={editMode}
+              />
+            )}
+            {activeTab === "skills" && (
+              <SkillsSection 
+                data={candidateData.skills} 
+                onUpdate={(data) => handleUpdate('skills', data)}
+                editMode={editMode}
+              />
+            )}
+            {activeTab === "portfolio" && (
+              <PortfolioSection 
+                data={candidateData.portfolioLinks} 
+                onUpdate={(data) => handleUpdate('portfolioLinks', data)}
+                editMode={editMode}
+              />
+            )}
+            {activeTab === "preferences" && (
+              <JobPreferencesSection 
+                data={candidateData.jobPreferences} 
+                onUpdate={(data) => handleUpdate('jobPreferences', data)}
+                editMode={editMode}
+              />
             )}
           </div>
         </div>

@@ -1,57 +1,120 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ProfileHeader from "@/components/dashboard/recruiter/profile/ProfileHeader";
 import CompanyInfoSection from "@/components/dashboard/recruiter/profile/CompanyInfoSection";
 import BrandingSection from "@/components/dashboard/recruiter/profile/Branding";
-import ContactInfoSection from "@/components/dashboard/recruiter/profile/CompanyInfoSection";
+import ContactInfoSection from "@/components/dashboard/recruiter/profile/ContactInfo";
+import { useSession } from "next-auth/react";
+import { getRecruiterProfile, updateRecruiterProfile } from "@/services/recruiter-service";
+import Loader from "@/components/ui/loader";
 
 export default function RecruiterProfilePage() {
   const [activeTab, setActiveTab] = useState("company");
   const [editMode, setEditMode] = useState(false);
-
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { data: session } = useSession();
+  
   const [recruiterData, setRecruiterData] = useState({
-    name: "Alex Johnson",
-    title: "Technical Recruiter",
-    email: "alex@techhiring.com",
-    phone: "+1219168193",
     avatar: null,
-    
-    // Company Information
     company: {
-      name: "TechHiring Inc.",
-      industry: "Information Technology",
-      size: "51-200 employees",
-      founded: "2015",
-      location: "San Francisco, CA",
-      hqLocation: "San Francisco, CA",
-      specialties: "Tech Recruitment, Talent Acquisition"
+      name: "",
+      industry: "",
+      size: "",
+      founded: "",
+      location: "",
+      hqLocation: "",
+      specialties: [],
+      description: ""
     },
-    
-    // Branding
     branding: {
-      logo: "/images/company-logo.jpg",
-      coverImage: "/images/company-cover.jpg",
-      description: "Specialized in connecting top tech talent with innovative companies across North America. We focus on JavaScript, Python, and AI/ML roles.",
-      website: "https://techhiring.com",
-      linkedin: "techhiring",
-      twitter: "techhiring"
+      logo: "",
+      coverImage: "",
+      description: "",
+      website: "",
+      linkedin: "",
+      twitter: ""
     },
-    
-    // Contact Info
     contact: {
-      primaryEmail: "careers@techhiring.com",
-      phone: "+1 (415) 555-0199",
-      address: "123 Tech Street, San Francisco, CA 94107",
-      hrEmail: "hr@techhiring.com",
-      generalEmail: "info@techhiring.com"
-    }
+      primaryEmail: "",
+      phone: "",
+      address: "",
+      hrEmail: "",
+      generalEmail: ""
+    },
+    isOnboarded: false
   });
 
-  const handleUpdate = (section, data) => {
-    setRecruiterData(prev => ({
-      ...prev,
-      [section]: data
-    }));
+  useEffect(() => {
+    const fetchRecruiterData = async () => {
+      try {
+        setLoading(true);
+        if (!session?.user?.id) return;
+        
+        const data = await getRecruiterProfile(session.user.id);
+        
+        setRecruiterData({
+          avatar: data.avatar,
+          email: data.email,
+          phone: data.phone,
+          company: {
+            name: data.company.name,
+            industry: data.company.industry,
+            size: data.company.size,
+            founded: data.company.founded,
+            location: data.company.location,
+            hqLocation: data.company.hqLocation,
+            specialties: data.company.specialties,
+            description: data.company.description
+          },
+          branding: {
+            logo: data.branding.logo,
+            coverImage: data.branding.coverImage || "",
+            description: data.branding.description,
+            website: data.branding.website,
+            linkedin: data.branding.linkedin,
+            twitter: data.branding.twitter
+          },
+          contact: {
+            primaryEmail: data.contact.primaryEmail,
+            phone: data.contact.phone,
+            address: data.contact.address,
+            hrEmail: data.contact.hrEmail,
+            generalEmail: data.contact.generalEmail
+          },
+          isOnboarded: data.isOnboarded
+        });
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching recruiter data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecruiterData();
+  }, [session]);
+
+  const handleUpdate = async (section, data) => {
+    try {
+      if (!session?.user?.id) return;
+      
+      setLoading(true);
+      await updateRecruiterProfile(session.user.id, section, data);
+
+      console.log(data)
+      
+      setRecruiterData(prev => ({
+        ...prev,
+        [section]: data,
+        ...(section === 'branding' && data.branding.logo ? { avatar: data.branding.logo } : {})
+      }));
+    } catch (err) {
+      setError(err.message);
+      console.error('Error updating recruiter data:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleEditMode = () => {
@@ -64,21 +127,44 @@ export default function RecruiterProfilePage() {
     { id: "contact", label: "Contact Info" }
   ];
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader/>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center text-red-500">
+          <p>Error loading profile: {error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Profile Header */}
       <ProfileHeader 
         user={recruiterData} 
         editMode={editMode}
         toggleEditMode={toggleEditMode}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col md:flex-row gap-8">
           {/* Left sidebar - Tabs */}
           <div className="md:w-1/4 lg:w-1/5">
             <div className="bg-white rounded-lg shadow-sm p-4 sticky top-8">
-              <h2 className="text-lg font-semibold mb-4">Profile Sections</h2>
+              <h2 className="text-lg font-semibold mb-4">Company Profile</h2>
               <nav className="space-y-2">
                 {tabs.map(tab => (
                   <button
