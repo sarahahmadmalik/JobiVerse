@@ -2,251 +2,289 @@
 import { useState } from "react";
 import Dropdown from "@/components/ui/dropdown";
 import Input from "@/components/ui/input";
+import InputAuto from "@/components/ui/input-auto";
 import { CalendarIcon, X } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { createJobPost } from "@/services/jobpost-service";
+import { SKILLS } from "@/constants/constants";
 
 const JobPostingForm = () => {
+  const { data: session } = useSession();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     jobTitle: "",
-    experienceLevel: "",
-    industry: "",
-    salaryExpectation: "",
-    qualifications: "",
-    startDate: "",
-    employmentType: ["Part Time"],
-    remotePreference: ["On-Site"],
-    skills: [],
     jobDescription: "",
-    hiringProcess: ""
+    responsibilities: [""],
+    requirements: [""],
+    experienceLevel: "",
+    jobType: "",
+    salary: {
+      value: "",
+      currency: "USD"
+    },
+    location: "",
+    workMode: "",
+    skills: []
   });
 
-  const industryOptions = [
-    { value: "tech", label: "Technology" },
-    { value: "finance", label: "Finance" },
-    { value: "healthcare", label: "Healthcare" },
-    { value: "education", label: "Education" },
-    { value: "retail", label: "Retail" },
-    { value: "manufacturing", label: "Manufacturing" }
+  const experienceLevelOptions = [
+    { value: "Entry", label: "Entry Level" },
+    { value: "Intermediate", label: "Intermediate" },
+    { value: "Senior", label: "Senior Level" },
+    { value: "Lead", label: "Lead" },
+    { value: "Executive", label: "Executive" }
   ];
 
-  const skillSuggestions = [
-    "Project Management",
-    "Data Analysis",
-    "Communication",
-    "JavaScript",
-    "UX/UI Design",
-    "Content Writing",
-    "Search Engine Optimization (SEO)",
-    "Customer Service"
+  const jobTypeOptions = [
+    { value: "Full-time", label: "Full-time" },
+    { value: "Part-time", label: "Part-time" },
+    { value: "Contract", label: "Contract" },
+    { value: "Internship", label: "Internship" },
+    { value: "Freelance", label: "Freelance" }
   ];
 
-  const handleEmploymentTypeChange = (type) => {
-    if (formData.employmentType.includes(type)) {
-      setFormData({
-        ...formData,
-        employmentType: formData.employmentType.filter(item => item !== type)
-      });
-    } else {
-      setFormData({
-        ...formData,
-        employmentType: [...formData.employmentType, type]
-      });
-    }
+  const workModeOptions = [
+    { value: "Onsite", label: "Onsite" },
+    { value: "Hybrid", label: "Hybrid" },
+    { value: "Remote", label: "Remote" }
+  ];
+
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleRemotePreferenceChange = (preference) => {
-    if (formData.remotePreference.includes(preference)) {
-      setFormData({
-        ...formData,
-        remotePreference: formData.remotePreference.filter(item => item !== preference)
-      });
-    } else {
-      setFormData({
-        ...formData,
-        remotePreference: [...formData.remotePreference, preference]
-      });
-    }
+  const handleSalaryChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      salary: {
+        ...prev.salary,
+        value: e.target.value
+      }
+    }));
   };
 
-  const handleIndustryChange = (value) => {
-    setFormData({
-      ...formData,
-      industry: value
-    });
+  const handleResponsibilityChange = (index, value) => {
+    const newResponsibilities = [...formData.responsibilities];
+    newResponsibilities[index] = value;
+    setFormData(prev => ({ ...prev, responsibilities: newResponsibilities }));
+  };
+
+  const addResponsibility = () => {
+    setFormData(prev => ({
+      ...prev,
+      responsibilities: [...prev.responsibilities, ""]
+    }));
+  };
+
+  const removeResponsibility = (index) => {
+    const newResponsibilities = formData.responsibilities.filter((_, i) => i !== index);
+    setFormData(prev => ({ ...prev, responsibilities: newResponsibilities }));
+  };
+
+  const handleRequirementChange = (index, value) => {
+    const newRequirements = [...formData.requirements];
+    newRequirements[index] = value;
+    setFormData(prev => ({ ...prev, requirements: newRequirements }));
+  };
+
+  const addRequirement = () => {
+    setFormData(prev => ({
+      ...prev,
+      requirements: [...prev.requirements, ""]
+    }));
+  };
+
+  const removeRequirement = (index) => {
+    const newRequirements = formData.requirements.filter((_, i) => i !== index);
+    setFormData(prev => ({ ...prev, requirements: newRequirements }));
   };
 
   const handleSkillSelect = (skill) => {
     if (!formData.skills.includes(skill)) {
-      setFormData({
-        ...formData,
-        skills: [...formData.skills, skill]
-      });
+      setFormData(prev => ({
+        ...prev,
+        skills: [...prev.skills, skill]
+      }));
     }
   };
 
   const removeSkill = (skillToRemove) => {
-    setFormData({
-      ...formData,
-      skills: formData.skills.filter(skill => skill !== skillToRemove)
-    });
+    setFormData(prev => ({
+      ...prev,
+      skills: prev.skills.filter(skill => skill !== skillToRemove)
+    }));
   };
 
-  const handleSubmit = (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log("Form submitted:", formData);
+    setIsSubmitting(true);
+
+    try {
+      // Prepare the data for API submission
+      const submissionData = {
+        ...formData,
+        // Convert salary value to number
+        salary: {
+          ...formData.salary,
+          value: formData.salary.value ? Number(formData.salary.value) : null
+        },
+        // Filter out empty responsibilities and requirements
+        responsibilities: formData.responsibilities.filter(r => r.trim() !== ""),
+        requirements: formData.requirements.filter(r => r.trim() !== ""),
+        // Add recruiter ID from session
+        recruiterId: session?.user?.id
+      };
+      const createdJob = await createJobPost(submissionData);
+      
+      router.push("/recruiter/job-posts");
+      
+    } catch (error) {
+      throw error
+      console.error("Failed to create job post:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
 
   return (
     <div className="max-w-6xl mx-auto px-3">
       <h1 className="text-xl font-semibold text-gray-800 mb-8">Create Job</h1>
       
       <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-          <div className="md:col-span-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          <div>
             <Input 
               label="Job Title" 
+              name="jobTitle"
               placeholder="e.g., Marketing Manager"
               value={formData.jobTitle}
-              onChange={(e) => setFormData({...formData, jobTitle: e.target.value})}
+              onChange={handleInputChange}
+              required
             />
           </div>
-          <div className="md:col-span-1">
-            <Input 
-              label="Experience Level" 
-              placeholder="e.g., Entry-Level"
-              value={formData.experienceLevel}
-              onChange={(e) => setFormData({...formData, experienceLevel: e.target.value})}
-            />
-          </div>
-          <div className="md:col-span-1">
+          <div>
             <Dropdown 
-              label="Industry"
-              options={industryOptions}
-              onChange={handleIndustryChange}
-              placeholder="Select"
-              value={formData.industry}
+              label="Experience Level"
+              options={experienceLevelOptions}
+              onChange={(value) => setFormData(prev => ({ ...prev, experienceLevel: value }))}
+              placeholder="Select experience level"
+              value={formData.experienceLevel}
+              required
             />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-4">
-          <div className="md:col-span-1">
-            <Input 
-              label="Salary Expectation(optional)" 
-              placeholder="e.g., $50,000 per year"
-              value={formData.salaryExpectation}
-              onChange={(e) => setFormData({...formData, salaryExpectation: e.target.value})}
-            />
-          </div>
-          <div className="md:col-span-1">
-            <Input 
-              label="Preferred Qualifications" 
-              placeholder="e.g., MS Computer Science"
-              value={formData.qualifications}
-              onChange={(e) => setFormData({...formData, qualifications: e.target.value})}
-            />
-          </div>
-          <div className="md:col-span-1">
-            <div className="flex flex-col w-full">
-              <label className="text-sm font-medium text-gray-700 mb-1">
-                Expected Start Date
-              </label>
-              <div className="relative">
-                <Input 
-                  placeholder="MM/YYYY"
-                  className="pl-4 pr-10"
-                  value={formData.startDate}
-                  onChange={(e) => setFormData({...formData, startDate: e.target.value})}
-                />
-                <CalendarIcon className="absolute right-3 top-3 text-gray-400" size={20} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-4">
-          <div>
-            <p className="text-sm font-medium text-gray-700 mb-2">Employment Type</p>
-            <div className="flex flex-wrap gap-4">
-              <label className="flex items-center">
-                <input 
-                  type="checkbox" 
-                  className="w-4 h-4 text-colors-primary rounded border-gray-300 focus:ring-colors-primary" 
-                  checked={formData.employmentType.includes("Part Time")} 
-                  onChange={() => handleEmploymentTypeChange("Part Time")}
-                />
-                <span className="ml-2 text-sm text-gray-800">Part Time</span>
-              </label>
-              <label className="flex items-center">
-                <input 
-                  type="checkbox" 
-                  className="w-4 h-4 text-colors-primary rounded border-gray-300 focus:ring-colors-primary"
-                  checked={formData.employmentType.includes("Full Time")} 
-                  onChange={() => handleEmploymentTypeChange("Full Time")}
-                />
-                <span className="ml-2 text-sm text-gray-800">Full Time</span>
-              </label>
-              <label className="flex items-center">
-                <input 
-                  type="checkbox" 
-                  className="w-4 h-4 text-colors-primary rounded border-gray-300 focus:ring-colors-primary"
-                  checked={formData.employmentType.includes("Contract")} 
-                  onChange={() => handleEmploymentTypeChange("Contract")}
-                />
-                <span className="ml-2 text-sm text-gray-800">Contract</span>
-              </label>
-              <label className="flex items-center">
-                <input 
-                  type="checkbox" 
-                  className="w-4 h-4 text-colors-primary rounded border-gray-300 focus:ring-colors-primary"
-                  checked={formData.employmentType.includes("Temporary")} 
-                  onChange={() => handleEmploymentTypeChange("Temporary")}
-                />
-                <span className="ml-2 text-sm text-gray-800">Temporary</span>
-              </label>
-            </div>
-          </div>
-
-          <div>
-            <p className="text-sm font-medium text-gray-700 mb-2">Remote/In-Office Preferences</p>
-            <div className="flex flex-wrap gap-4">
-              <label className="flex items-center">
-                <input 
-                  type="checkbox" 
-                  className="w-4 h-4 text-colors-primary rounded border-gray-300 focus:ring-colors-primary"
-                  checked={formData.remotePreference.includes("On-Site")} 
-                  onChange={() => handleRemotePreferenceChange("On-Site")}
-                />
-                <span className="ml-2 text-sm text-gray-800">On-Site</span>
-              </label>
-              <label className="flex items-center">
-                <input 
-                  type="checkbox" 
-                  className="w-4 h-4 text-colors-primary rounded border-gray-300 focus:ring-colors-primary"
-                  checked={formData.remotePreference.includes("Remote")} 
-                  onChange={() => handleRemotePreferenceChange("Remote")}
-                />
-                <span className="ml-2 text-sm text-gray-800">Remote</span>
-              </label>
-              <label className="flex items-center">
-                <input 
-                  type="checkbox" 
-                  className="w-4 h-4 text-colors-primary rounded border-gray-300 focus:ring-colors-primary"
-                  checked={formData.remotePreference.includes("Hybrid")} 
-                  onChange={() => handleRemotePreferenceChange("Hybrid")}
-                />
-                <span className="ml-2 text-sm text-gray-800">Hybrid</span>
-              </label>
-            </div>
           </div>
         </div>
 
         <div className="mt-4">
-          <p className="text-sm font-medium text-gray-700 mb-2">Skills Required</p>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Job Description</label>
+          <textarea
+            name="jobDescription"
+            className="w-full h-32 px-4 py-3 border border-gray-300 rounded-xl text-gray-800 placeholder-gray-400 
+                      focus:outline-none focus:ring-1 focus:ring-colors-primary focus:border-colors-primary
+                      hover:border-gray-400 transition-all duration-200 ease-in-out"
+            placeholder="Enter detailed job description"
+            value={formData.jobDescription}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+
+        <div className="mt-4">
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Responsibilities</label>
+          {formData.responsibilities.map((responsibility, index) => (
+            <div key={index} className="flex items-center gap-2 mb-2">
+              <Input
+                value={responsibility}
+                onChange={(e) => handleResponsibilityChange(index, e.target.value)}
+                placeholder={`Responsibility ${index + 1}`}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => removeResponsibility(index)}
+                className="text-red-500 hover:text-red-700"
+              >
+                <X size={18} />
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addResponsibility}
+            className="mt-2 text-colors-primary hover:text-colors-primary-dark text-sm"
+          >
+            + Add Responsibility
+          </button>
+        </div>
+
+        <div className="mt-4">
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Requirements</label>
+          {formData.requirements.map((requirement, index) => (
+            <div key={index} className="flex items-center gap-2 mb-2">
+              <Input
+                value={requirement}
+                onChange={(e) => handleRequirementChange(index, e.target.value)}
+                placeholder={`Requirement ${index + 1}`}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => removeRequirement(index)}
+                className="text-red-500 hover:text-red-700"
+              >
+                <X size={18} />
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addRequirement}
+            className="mt-2 text-colors-primary hover:text-colors-primary-dark text-sm"
+          >
+            + Add Requirement
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-4">
+          <div>
+            <Dropdown 
+              label="Job Type"
+              options={jobTypeOptions}
+              onChange={(value) => setFormData(prev => ({ ...prev, jobType: value }))}
+              placeholder="Select job type"
+              value={formData.jobType}
+              required
+            />
+          </div>
+          <div>
+            <Dropdown 
+              label="Work Mode"
+              options={workModeOptions}
+              onChange={(value) => setFormData(prev => ({ ...prev, workMode: value }))}
+              placeholder="Select work mode"
+              value={formData.workMode}
+              required
+            />
+          </div>
+          <div>
+            <Input 
+              label="Location" 
+              name="location"
+              placeholder="e.g., New York, NY"
+              value={formData.location}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+        </div>
+
+ <div className="mt-4">
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Skills Required</label>
           <InputAuto 
-            label=""
             placeholder="Type a skill, e.g., Project Management"
-            suggestions={skillSuggestions}
+            suggestions={SKILLS}
             onSelect={handleSkillSelect}
           />
           <div className="flex flex-wrap gap-2 mt-3">
@@ -268,30 +306,32 @@ const JobPostingForm = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-2">
           <div>
-            <p className="text-sm font-medium text-gray-700 mb-2">Job Description</p>
-            <textarea 
-              className="w-full h-32 px-4 py-3 border border-gray-300 rounded-xl text-gray-800 placeholder-gray-400 
-                         focus:outline-none focus:ring-1 focus:ring-colors-primary focus:border-colors-primary
-                         hover:border-gray-400 transition-all duration-200 ease-in-out"
-              placeholder="Enter job description"
-              value={formData.jobDescription}
-              onChange={(e) => setFormData({...formData, jobDescription: e.target.value})}
+            <Input 
+              label="Salary" 
+              name="salary"
+              type="number"
+              placeholder="e.g., 50000"
+              value={formData.salary.value}
+              onChange={handleSalaryChange}
             />
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-700 mb-2">Hiring Process</p>
-            <textarea 
-              className="w-full h-32 px-4 py-3 border border-gray-300 rounded-xl text-gray-800 placeholder-gray-400 
-                         focus:outline-none focus:ring-1 focus:ring-colors-primary focus:border-colors-primary
-                         hover:border-gray-400 transition-all duration-200 ease-in-out"
-              placeholder="Describe the hiring process"
-              value={formData.hiringProcess}
-              onChange={(e) => setFormData({...formData, hiringProcess: e.target.value})}
+            <Dropdown 
+              label="Currency"
+              options={[{ value: "USD", label: "USD" }]}
+              onChange={(value) => setFormData(prev => ({ 
+                ...prev, 
+                salary: { ...prev.salary, currency: value } 
+              }))}
+              value={formData.salary.currency}
+              disabled
             />
           </div>
         </div>
+
+       
 
         <div className="flex justify-end mt-8">
           <button
@@ -302,68 +342,6 @@ const JobPostingForm = () => {
           </button>
         </div>
       </form>
-    </div>
-  );
-};
-
-const InputAuto = ({ label, suggestions = [], onSelect, ...props }) => {
-  const [inputValue, setInputValue] = useState("");
-  const [filteredSuggestions, setFilteredSuggestions] = useState([]);
-
-  const handleInputChange = (e) => {
-    const value = e.target.value;
-    setInputValue(value);
-
-    if (value) {
-      setFilteredSuggestions(
-        suggestions.filter((item) =>
-          item.toLowerCase().includes(value.toLowerCase())
-        )
-      );
-    } else {
-      setFilteredSuggestions([]);
-    }
-  };
-
-  const handleSelect = (item) => {
-    onSelect(item);
-    setInputValue("");
-    setFilteredSuggestions([]);
-  };
-
-  return (
-    <div className="relative flex flex-col w-full">
-      {/* Label */}
-      {label && (
-        <label className="text-sm font-medium text-gray-700 mb-1">
-          {label}
-        </label>
-      )}
-
-      {/* Input field */}
-      <input
-        {...props}
-        value={inputValue}
-        onChange={handleInputChange}
-        className="w-full px-[24px] py-[12px] border border-gray-300 rounded-[12px] text-gray-800 placeholder-gray-400 
-                   focus:outline-none focus:ring-1 focus:ring-colors-primary focus:border-colors-primary 
-                   hover:border-gray-400 transition-all duration-200 ease-in-out"
-      />
-
-      {/* Suggestions dropdown */}
-      {inputValue && filteredSuggestions.length > 0 && (
-        <div className="absolute top-[4.2rem] z-10 w-full bg-white border border-gray-300 rounded-[12px] mt-1 shadow-md max-h-[200px] overflow-y-auto">
-          {filteredSuggestions.map((item) => (
-            <div
-              key={item}
-              className="px-4 py-2 cursor-pointer hover:bg-gray-100 text-gray-800"
-              onClick={() => handleSelect(item)}
-            >
-              {item}
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 };
