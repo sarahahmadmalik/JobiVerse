@@ -98,8 +98,7 @@ export async function GET(request) {
     }
 
     // Get all resumes for this candidate
-    const resumes = await Resume.find({ candidateId: candidate._id });
-    // console.log(resumes)
+    const resumes = await Resume.find({ candidateId: session.user.id });
     return NextResponse.json(resumes);
   } catch (error) {
     console.error('Error fetching resumes:', error);

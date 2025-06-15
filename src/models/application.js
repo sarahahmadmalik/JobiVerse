@@ -8,7 +8,7 @@ const applicationSchema = new mongoose.Schema({
   },
   candidateId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Candidate',
+    ref: 'Auth',
     required: true
   },
   status: {
@@ -30,7 +30,8 @@ const applicationSchema = new mongoose.Schema({
       type: Map,
       of: Number
     },
-    topSectionsViewed: [String]
+    topSectionsViewed: [String],
+    heatmap: String
   },
   documents: {
     resume: {
@@ -67,6 +68,13 @@ applicationSchema.virtual('jobDetails', {
 applicationSchema.virtual('candidateDetails', {
   ref: 'Candidate',
   localField: 'candidateId',
+  foreignField: '_id',
+  justOne: true
+});
+
+applicationSchema.virtual('resumeDetails', {
+  ref: 'Resume',
+  localField: 'documents.resume',
   foreignField: '_id',
   justOne: true
 });

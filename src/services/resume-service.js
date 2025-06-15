@@ -39,6 +39,7 @@ export const resumeService = {
    */
   getUserResumes: async (userId) => {
     const response = await fetch(`${API_URL}/resume?userId=${userId}`);
+    console.log(response)
     return await response.json();
   },
 
@@ -48,6 +49,7 @@ export const resumeService = {
    * @returns {Promise<object>} Resume data
    */
   getResumeById: async (resumeId) => {
+    console.log(resumeId)
     const response = await fetch(`${API_URL}/resume/${resumeId}`);
     return await response.json();
   },

@@ -38,6 +38,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import ResumeGuide from '@/components/dashboard/candidate/resume/ResumeGuide'
 import { ResumeScoreChecker } from '@/components/dashboard/candidate/resume/ResumeScore'
 import Loader from '@/components/ui/loader'
+import { applicationService } from '@/services/applicant-service'
+import JobSubmissionPopup from '@/components/dashboard/candidate/job-listing/JobSubmissionPopup'
+import confetti from 'canvas-confetti'
 
 const ResumeBuilder = () => {
   const { data: session } = useSession()
@@ -160,6 +163,59 @@ const ResumeBuilder = () => {
   const [activeSection, setActiveSection] = useState('header')
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [showSubmissionPopup, setShowSubmissionPopup] = useState(false)
+  const [isApplying, setIsApplying] = useState(false)
+
+  const handleApplyWithResume = async () => {
+    try {
+      setIsApplying(true)
+
+      // 1. First save the resume (same as handleSaveResume)
+      const pdfBlob = await generatePDFBlob()
+      const file = new File(
+        [pdfBlob],
+        `${
+          resumeData.header?.name?.replace(/\s+/g, '_') || 'Resume'
+        }_${Date.now()}.pdf`,
+        { type: 'application/pdf' }
+      )
+
+      const uploadResult = await startUpload([file])
+      const resumeUrl = uploadResult[0].url
+      const savedResume = await saveResumeData(resumeUrl)
+
+      // 2. Create application record
+      const jobId = searchParams.get('jobId')
+      if (!jobId) {
+        throw new Error('Job ID not found')
+      }
+
+      const applicationResponse = await applicationService.applyForJob(
+        jobId,
+        session.user.id,
+        savedResume._id
+      )
+
+      // 3. Show success with confetti
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      })
+
+      setShowSubmissionPopup(true)
+    } catch (error) {
+      console.error('Error applying with resume:', error)
+      setToastConfig({
+        type: 'error',
+        title: 'Application Failed',
+        message: error.message || 'Failed to submit application'
+      })
+      setShowToast(true)
+    } finally {
+      setIsApplying(false)
+    }
+  }
 
   const { startUpload, isUploading } = useUploadThing('resumeUploader', {
     onClientUploadComplete: res => {
@@ -249,7 +305,7 @@ const ResumeBuilder = () => {
         throw new Error('User not authenticated')
       }
 
-      const existingResumeId = null // exisiting resume id causes issues like not saves in db 
+      const existingResumeId = null // exisiting resume id causes issues like not saves in db
 
       const resumeDataToSave = {
         jobId: searchParams.get('jobId') || 'default-job-id',
@@ -421,8 +477,6 @@ const ResumeBuilder = () => {
       alert('An error occurred while downloading. Please try again.')
     }
   }
-
-  const handleApplyWithResume = async () => {}
 
   useEffect(() => {
     const loadData = async () => {
@@ -1785,9 +1839,13 @@ const ResumeBuilder = () => {
               <button
                 onClick={handleApplyWithResume}
                 className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-[12px] flex items-center gap-2 transition-colors duration-200'
+                disabled={isApplying || isSaving || isUploading}
               >
                 <Briefcase size={16} />
-                Apply with this Resume
+                {isApplying ? 'Applying...' : 'Apply with this Resume'}
+                {isApplying && (
+                  <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
+                )}
               </button>
             </div>
           </div>
@@ -1878,6 +1936,15 @@ const ResumeBuilder = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <JobSubmissionPopup
+        isOpen={showSubmissionPopup}
+        onClose={() => {
+          setShowSubmissionPopup(false)
+          router.push('/job-listings') 
+        }}
+        illustrationSrc='/assets/submit.svg' // Add this image to your public folder
+      />
     </div>
   )
 }

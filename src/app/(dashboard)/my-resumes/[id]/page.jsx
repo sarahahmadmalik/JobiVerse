@@ -5,60 +5,64 @@ import { toolbarPlugin } from "@react-pdf-viewer/toolbar";
 import Button from "@/components/ui/button";
 import { FiDownload, FiEdit, FiChevronLeft } from "react-icons/fi";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { resumeService } from "@/services/resume-service";
+import { useParams } from "next/navigation";
 
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/toolbar/lib/styles/index.css";
 import Loader from "@/components/ui/loader";
 
-// Sample resume data - replace with API call in production
-const getResumeById = (id) => {
-  const resumes = [
-    {
-      id: 1,
-      title: "Software Engineer Resume",
-      image: "/resume-sample-1.jpg",
-      lastUpdated: "May 15, 2023",
-      pdfUrl: "/resumes/Sara Ahmad Malik - NEW CV.pdf",
-    },
-    {
-      id: 2,
-      title: "Product Manager Resume",
-      image: "/resume-sample-2.jpg",
-      lastUpdated: "June 2, 2023",
-      pdfUrl: "/resumes/Sara Ahmad Malik - NEW CV.pdf",
-    },
-    {
-      id: 3,
-      title: "UX Designer Resume",
-      image: "/resume-sample-3.jpg",
-      lastUpdated: "April 28, 2023",
-      pdfUrl: "/resumes/Sara Ahmad Malik - NEW CV.pdf",
-    },
-  ];
-  return resumes.find((resume) => resume.id === Number(id));
-};
-
-const ResumeDetailPage = ({ params }) => {
+const ResumeDetailPage = () => {
+  const params = useParams(); // Properly access params using useParams()
   const [resume, setResume] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { data: session } = useSession();
 
   const toolbarPluginInstance = toolbarPlugin();
   const { Toolbar } = toolbarPluginInstance;
 
   useEffect(() => {
-    Promise.resolve(params).then((resolvedParams) => {
-      const foundResume = getResumeById(resolvedParams.id);
-      setResume(foundResume);
-      setIsLoading(false);
-    });
-  }, [params]);
+    const fetchResume = async () => {
+      console.log(params.id)
+      if (!params?.id || !session?.user?.id) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        // Fetch resume using the resumeService
+        const response = await resumeService.getResumeById(params.id);
+        console.log(response)
+        
+        if (!response) {
+          throw new Error('Resume not found');
+        }
+
+        setResume(response);
+      } catch (err) {
+        console.error("Error fetching resume:", err);
+        setError(err.message || "Failed to load resume");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchResume();
+  }, [params?.id, session?.user?.id]); // Add dependencies to useEffect
+
+  console.log(resume)
 
   const handleDownloadResume = () => {
-    if (!resume) return;
+    if (!resume?.resumeLink) return;
 
     const link = document.createElement("a");
-    link.href = resume.pdfUrl;
-    link.download = `${resume.title.replace(/\s+/g, "-").toLowerCase()}.pdf`;
+    link.href = resume.resumeLink;
+    link.download = `${resume.fileName?.replace(/\s+/g, "-").toLowerCase() || 'resume'}.pdf`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -67,16 +71,16 @@ const ResumeDetailPage = ({ params }) => {
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 min-h-screen py-8 flex justify-center items-center h-64">
-       <Loader/>
+        <Loader />
       </div>
     );
   }
 
-  if (!resume) {
+  if (error || !resume) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-lg p-6 text-center">
-          <p className="text-red-500">Resume not found</p>
+          <p className="text-red-500">{error || "Resume not found"}</p>
           <Link
             href="/my-resumes"
             className="text-blue-600 hover:underline mt-4 inline-block"
@@ -100,7 +104,7 @@ const ResumeDetailPage = ({ params }) => {
             Back to Resumes
           </Link>
           <div className="flex gap-3">
-            <Link href={`/dashboard/resumes/${resume.id}/edit`}>
+            {/* <Link href={`/dashboard/resumes/${params.id}/edit`}>
               <Button
                 variant="outline"
                 className="!text-[14px] !font-[500] flex items-center gap-2"
@@ -108,7 +112,7 @@ const ResumeDetailPage = ({ params }) => {
                 <FiEdit size={16} />
                 Edit
               </Button>
-            </Link>
+            </Link> */}
             <Button
               onClick={handleDownloadResume}
               className="!text-[14px] !font-[500] flex items-center gap-2"
@@ -124,10 +128,10 @@ const ResumeDetailPage = ({ params }) => {
             <div className="border-b p-2 bg-gray-100">
               <Toolbar>
                 {(props) => {
-                  const { ZoomIn, ZoomOut, CurrentPageInput, NumberOfPages, CurrentScale  } =
+                  const { ZoomIn, ZoomOut, CurrentPageInput, NumberOfPages, CurrentScale } =
                     props;
                   return (
-                    <div className="flex  justify-center items-center gap-4">
+                    <div className="flex justify-center items-center gap-4">
                       <div className="flex gap-2 items-center">
                         <ZoomOut />
                         <CurrentScale>
@@ -150,7 +154,7 @@ const ResumeDetailPage = ({ params }) => {
             </div>
 
             <Viewer
-              fileUrl={resume.pdfUrl}
+              fileUrl={resume.resumeLink}
               plugins={[toolbarPluginInstance]}
               theme={{ theme: "auto" }}
               renderError={(error) => (
