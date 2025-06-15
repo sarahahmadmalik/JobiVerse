@@ -1,29 +1,35 @@
-"use client";
+'use client';
 import { useState } from 'react';
 import { MapPin, Bookmark } from 'lucide-react';
 import Button from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation'; 
+import { useRouter } from 'next/navigation';
 
 export default function JobCard({ 
-  date = "04/12/2024",
-  company = "Google", 
+  id,
+  postedAt,
+  company = {},
   position = "Senior App Developer",
-  monthlySalary = 30000, 
+  salary = { value: 0, currency: 'USD' },
   location = "London",
-  partTime = true,
-  fullTime = true,
-  contractBased = true,
-  internship = false,
-  experienceLevel = "Intermediate level",
+  jobType = "Full-time",
+  experienceLevel = "Intermediate",
+  workMode = "Remote",
+  skills = [],
   backgroundColor = "bg-white"
 }) {
   const [isSaved, setIsSaved] = useState(false);
-  const router = useRouter(); 
-    const id = 1;
-  
+  const router = useRouter();
+
+  // Format date display
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString('en-US', options);
+  };
+
   // Format salary display
   const formatSalary = (amount) => {
+    if (!amount) return "Salary not specified";
     if (amount >= 1000000) {
       return `$${(amount / 1000000).toFixed(1)}m/month`;
     }
@@ -31,6 +37,25 @@ export default function JobCard({
       return `$${(amount / 1000).toFixed(0)}k/month`;
     }
     return `$${amount}/month`;
+  };
+
+  // Get job type badges
+  const getJobTypeBadges = () => {
+    const badges = [];
+    if (jobType === 'Full-time') badges.push('Full time');
+    if (jobType === 'Part-time') badges.push('Part time');
+    if (jobType === 'Contract') badges.push('Contract');
+    if (jobType === 'Internship') badges.push('Internship');
+    return badges;
+  };
+
+  // Get work mode badges
+  const getWorkModeBadges = () => {
+    const badges = [];
+    if (workMode === 'Remote') badges.push('Remote');
+    if (workMode === 'Hybrid') badges.push('Hybrid');
+    if (workMode === 'On-site') badges.push('On-site');
+    return badges;
   };
 
   const handleSave = (e) => {
@@ -41,7 +66,6 @@ export default function JobCard({
   const handleViewDetails = () => {
     router.push(`/job-listings/${id}`);
   };
-
 
   return (
     <motion.div 
@@ -56,10 +80,11 @@ export default function JobCard({
         stiffness: 300,
         damping: 15
       }}
+      onClick={handleViewDetails}
     >
       <div className={`${backgroundColor} p-5 pb-4 relative transition-colors duration-300 group`}>
         <div className="inline-block bg-white rounded-full px-3 py-1 text-sm text-gray-700 mb-3 shadow-sm">
-          {date}
+          {formatDate(postedAt)}
         </div>
 
         <motion.button 
@@ -75,7 +100,7 @@ export default function JobCard({
         </motion.button>
 
         <h3 className="text-base font-medium text-gray-800">
-          {company}
+          {company.name || company}
         </h3>
 
         <h2 className="text-xl font-bold text-gray-900 mb-3">
@@ -83,31 +108,26 @@ export default function JobCard({
         </h2>
 
         <div className="flex flex-wrap gap-2">
-          {partTime && (
-            <span className="bg-white/80 text-gray-600 border border-gray-200 rounded-full px-3 py-1 text-xs shadow-sm">
-              Part time
+          {getJobTypeBadges().map((badge, index) => (
+            <span key={index} className="bg-white/80 text-gray-600 border border-gray-200 rounded-full px-3 py-1 text-xs shadow-sm">
+              {badge}
             </span>
-          )}
+          ))}
           {experienceLevel && (
             <span className="bg-white/80 text-gray-600 border border-gray-200 rounded-full px-3 py-1 text-xs shadow-sm">
               {experienceLevel}
             </span>
           )}
-          {fullTime && (
-            <span className="bg-white/80 text-gray-600 border border-gray-200 rounded-full px-3 py-1 text-xs shadow-sm">
-              Full time
+          {getWorkModeBadges().map((badge, index) => (
+            <span key={index} className="bg-white/80 text-gray-600 border border-gray-200 rounded-full px-3 py-1 text-xs shadow-sm">
+              {badge}
             </span>
-          )}
-          {contractBased && (
-            <span className="bg-white/80 text-gray-600 border border-gray-200 rounded-full px-3 py-1 text-xs shadow-sm">
-              Contract
+          ))}
+          {skills.slice(0, 3).map((skill, index) => (
+            <span key={index} className="bg-white/80 text-gray-600 border border-gray-200 rounded-full px-3 py-1 text-xs shadow-sm">
+              {skill}
             </span>
-          )}
-          {internship && (
-            <span className="bg-white/80 text-gray-600 border border-gray-200 rounded-full px-3 py-1 text-xs shadow-sm">
-              Internship
-            </span>
-          )}
+          ))}
         </div>
       </div>
 
@@ -117,7 +137,7 @@ export default function JobCard({
       >
         <div>
           <div className="font-bold text-gray-900">
-            {formatSalary(monthlySalary)}
+            {formatSalary(salary?.value)}
           </div>
           <div className="flex items-center text-gray-500 text-sm">
             <MapPin size={14} className="mr-1" />
@@ -128,10 +148,13 @@ export default function JobCard({
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <Button onClick={(e) => {
+          <Button 
+            onClick={(e) => {
               e.stopPropagation(); 
               handleViewDetails();
-            }} className="!shadow-none text-white bg-indigo-500 hover:bg-indigo-600 !text-sm transition-colors">
+            }} 
+            className="!shadow-none text-white bg-indigo-500 hover:bg-indigo-600 !text-sm"
+          >
             View
           </Button>
         </motion.div>

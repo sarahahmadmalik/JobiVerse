@@ -12,6 +12,16 @@ export const createJobPost = async (jobData) => {
   }
 };
 
+export const getAllJobPosts = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/job-posts/getAll`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching job posts:', error);
+    throw error;
+  }
+};
+
 export const getJobPosts = async (recruiterId) => {
   try {
     const response = await axios.get(`${API_URL}/job-posts?recruiterId=${recruiterId}`);

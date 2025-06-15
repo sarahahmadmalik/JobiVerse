@@ -17,8 +17,8 @@ import Dropdown from "@/components/ui/dropdown";
 import { useRouter } from 'next/navigation';
 
 export default function RecruiterJobsForYou({ jobs, onDelete, onToggleStatus, onEdit }) {
+    console.log(jobs)
     const router = useRouter();
-    // Enhanced sorting options
     const [sortOption, setSortOption] = useState('recent');
     const sortOptions = [
         { value: 'recent', label: 'Most Recent' },
@@ -28,10 +28,6 @@ export default function RecruiterJobsForYou({ jobs, onDelete, onToggleStatus, on
         { value: 'applicants-low', label: 'Applicants (Low to High)' },
         { value: 'experience-high', label: 'Experience (High to Low)' },
         { value: 'experience-low', label: 'Experience (Low to High)' },
-        { value: 'company-asc', label: 'Company (A-Z)' },
-        { value: 'company-desc', label: 'Company (Z-A)' },
-        { value: 'location-asc', label: 'Location (A-Z)' },
-        { value: 'location-desc', label: 'Location (Z-A)' },
         { value: 'title-asc', label: 'Job Title (A-Z)' },
         { value: 'title-desc', label: 'Job Title (Z-A)' }
     ];
@@ -44,54 +40,49 @@ export default function RecruiterJobsForYou({ jobs, onDelete, onToggleStatus, on
         "bg-blue-50",
         "bg-pink-50"
     ];
-  
+
     const getBackgroundColor = (index) => bgColors[index % bgColors.length];
   
-    // Helper function to convert experience levels to numerical values for sorting
+    // Updated experience level mapping
     const getExperienceValue = (job) => {
-        if (job.senior) return 3;
-        if (job.intermediate) return 2;
-        if (job.entryLevel) return 1;
-        return 0;
+        switch(job.experienceLevel) {
+            case 'Entry': return 1;
+            case 'Intermediate': return 2;
+            case 'Senior': return 3;
+            case 'Lead': return 4;
+            case 'Executive': return 5;
+            default: return 0;
+        }
     };
   
-    // Enhanced sorting function
+    // Updated sorting function
     const sortedJobs = [...jobs].sort((a, b) => {
         switch (sortOption) {
             case 'salary-high':
-                return b.monthlySalary - a.monthlySalary;
+                return (b.salary?.value || 0) - (a.salary?.value || 0);
             case 'salary-low':
-                return a.monthlySalary - b.monthlySalary;
+                return (a.salary?.value || 0) - (b.salary?.value || 0);
             case 'applicants-high':
-                return b.applicants - a.applicants;
+                return (b.applications?.length || 0) - (a.applications?.length || 0);
             case 'applicants-low':
-                return a.applicants - b.applicants;
+                return (a.applications?.length || 0) - (b.applications?.length || 0);
             case 'experience-high':
                 return getExperienceValue(b) - getExperienceValue(a);
             case 'experience-low':
                 return getExperienceValue(a) - getExperienceValue(b);
-            case 'company-asc':
-                return a.company.localeCompare(b.company);
-            case 'company-desc':
-                return b.company.localeCompare(a.company);
-            case 'location-asc':
-                return a.location.localeCompare(b.location);
-            case 'location-desc':
-                return b.location.localeCompare(a.location);
             case 'title-asc':
-                return a.position.localeCompare(b.position);
+                return a.jobTitle.localeCompare(b.jobTitle);
             case 'title-desc':
-                return b.position.localeCompare(a.position);
+                return b.jobTitle.localeCompare(a.jobTitle);
             case 'recent':
             default:
-                return new Date(b.date.split('/').reverse().join('-')) - new Date(a.date.split('/').reverse().join('-'));
+                return new Date(b.postedAt) - new Date(a.postedAt);
         }
     });
 
-    const handleViewDetails = () => {
-      
-          router.push(`/recruiter/job-listings/1`);
-      };
+    const handleViewDetails = (jobId) => {
+        router.push(`/recruiter/job-listings/${jobId}`);
+    };
   
     return (
         <div className="w-full relative py-4 md:px-4 px-2">
@@ -103,7 +94,6 @@ export default function RecruiterJobsForYou({ jobs, onDelete, onToggleStatus, on
                     </span>
                 </div>
                 <div className="flex items-center gap-3 mt-6 mb-2 md:my-0">
-                    {/* Sorting dropdown */}
                     <div className="w-48">
                         <Dropdown
                             options={sortOptions}
@@ -118,17 +108,41 @@ export default function RecruiterJobsForYou({ jobs, onDelete, onToggleStatus, on
   
             <div className="flex-1">
                 <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6">
-                    {sortedJobs.map((job, index) => (
-                        <RecruiterJobCard
-                            key={job.id}
-                            job={job}
-                            backgroundColor={getBackgroundColor(index)}
-                            onDelete={() => onDelete(job.id)}
-                            onToggleStatus={() => onToggleStatus(job.id)}
-                            onEdit={() => onEdit(job.id)}
-                            onView={handleViewDetails}
-                        />
-                    ))}
+                    <AnimatePresence>
+                        {sortedJobs.map((job, index) => (
+                            <motion.div
+                                key={job._id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                <RecruiterJobCard
+                                    job={{
+                                        id: job._id,
+                                        title: job.jobTitle,
+                                        company: job.recruiterId?.company?.name || "Your Company",
+                                        location: job.location,
+                                        salary: job.salary?.value || 0,
+                                        salaryDisplay: job.salary?.value ? `$${(job.salary.value / 1000).toFixed(1)}k/month` : "Not specified",
+                                        workMode: job.workMode,
+                                        experienceLevel: job.experienceLevel,
+                                        jobType: job.jobType,
+                                        applicants: job.applications?.length || 0,
+                                        company: job.recruiterInfo?.company?.name,
+                                        postedAt: new Date(job.postedAt).toLocaleDateString(),
+                                        isOpen: job.isOpen,
+                                        skills: job.skills || []
+                                    }}
+                                    backgroundColor={getBackgroundColor(index)}
+                                    onDelete={() => onDelete(job._id)}
+                                    onToggleStatus={() => onToggleStatus(job._id, job.isOpen)}
+                                    onEdit={() => onEdit(job._id)}
+                                    onView={() => handleViewDetails(job._id)}
+                                />
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
                 </div>
   
                 {sortedJobs.length === 0 && (

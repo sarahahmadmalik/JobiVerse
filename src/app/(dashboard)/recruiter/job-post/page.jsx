@@ -4,6 +4,7 @@ import Dropdown from "@/components/ui/dropdown";
 import Input from "@/components/ui/input";
 import InputAuto from "@/components/ui/input-auto";
 import { CalendarIcon, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { createJobPost } from "@/services/jobpost-service";
 import { SKILLS } from "@/constants/constants";
@@ -138,7 +139,7 @@ const handleSubmit = async (e) => {
       };
       const createdJob = await createJobPost(submissionData);
       
-      router.push("/recruiter/job-posts");
+      router.push("/recruiter/job-listings");
       
     } catch (error) {
       throw error
@@ -331,14 +332,14 @@ const handleSubmit = async (e) => {
           </div>
         </div>
 
-       
-
+    
         <div className="flex justify-end mt-8">
           <button
             type="submit"
-            className="px-6 py-3 bg-colors-primary text-white rounded-lg hover:bg-colors-primary-dark transition-colors duration-200"
+            className="px-6 py-3 flex items-center gap-2 bg-colors-primary text-white rounded-lg hover:bg-colors-primary-dark transition-colors duration-200"
           >
             Post Job
+               {isSubmitting && <Spinner/>}
           </button>
         </div>
       </form>

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import connectDB from '@/utils/db';
 import JobPost from '@/models/jobpost';
+import Recruiter from '@/models/recruiter';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export async function GET(request, { params }) {
@@ -17,9 +18,10 @@ export async function GET(request, { params }) {
   await connectDB();
 
   try {
-    const jobPost = await JobPost.findById(params.id)
-      .populate('recruiterId')
-      .populate('applications');
+     const { id } = await params;
+    const jobPost = await JobPost.findById(id)
+      .populate('recruiterInfo')
+      // .populate('applicationDetails');
 
     if (!jobPost) {
       return NextResponse.json(
@@ -52,8 +54,10 @@ export async function PUT(request, { params }) {
 
   try {
     const jobData = await request.json();
+    console.log(jobData)
+    const { id } = await params;
     const updatedJobPost = await JobPost.findByIdAndUpdate(
-      params.id,
+      id,
       jobData,
       { new: true }
     );
@@ -89,12 +93,13 @@ export async function DELETE(request, { params }) {
 
   try {
     // Remove job post reference from recruiter
+     const { id } = await params;
     await Recruiter.updateOne(
-      { jobPosts: params.id },
-      { $pull: { jobPosts: params.id } }
+      { jobPosts: id },
+      { $pull: { jobPosts: id } }
     );
 
-    const deletedJobPost = await JobPost.findByIdAndDelete(params.id);
+    const deletedJobPost = await JobPost.findByIdAndDelete(id);
 
     if (!deletedJobPost) {
       return NextResponse.json(
@@ -104,7 +109,8 @@ export async function DELETE(request, { params }) {
     }
 
     return NextResponse.json(
-      { message: 'Job post deleted successfully' }
+      { message: 'Job post deleted successfully' },
+      { status: 200 }
     );
   } catch (error) {
     console.error('Error deleting job post:', error);

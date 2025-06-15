@@ -12,6 +12,7 @@ export const getCandidateProfile = async (userId) => {
   }
 };
 
+
 export const updateCandidateProfile = async (userId, section, data) => {
   try {
     const response = await axios.put(`${API_URL}/candidate/profile/putProfile`, {

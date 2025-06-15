@@ -29,7 +29,8 @@ export async function GET(request) {
 
     const jobPosts = await JobPost.find({ recruiterId: recruiter._id })
       .sort({ postedAt: -1 })
-      .populate('applications');
+      .populate('recruiterInfo')
+      // .populate('applications');
 
     return NextResponse.json(jobPosts);
   } catch (error) {
