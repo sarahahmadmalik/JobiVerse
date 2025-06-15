@@ -2,6 +2,7 @@ import React from "react";
 import Image from "next/image";
 import Button from "@/components/ui/button";
 import Spinner from "@/components/ui/spinner";
+import { FiFile } from "react-icons/fi";
 
 const ResumeCard = ({ title, image, isGeneratingThumbnail  }) => {
   return (
