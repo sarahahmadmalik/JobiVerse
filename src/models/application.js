@@ -79,5 +79,12 @@ applicationSchema.virtual('resumeDetails', {
   justOne: true
 });
 
+applicationSchema.pre(/^find/, function() {
+  // Only populate if specifically requested to avoid performance issues
+  if (this.getOptions().populateVirtuals) {
+    this.populate('jobDetails candidateDetails resumeDetails');
+  }
+});
+
 const Application = mongoose.models.Application || mongoose.model('Application', applicationSchema);
 export default Application;

@@ -8,9 +8,13 @@ import ResumeCard from "@/components/dashboard/candidate/home/ResumeCard";
 import ApplicationCard from "@/components/dashboard/candidate/home/ApplicationCard";
 import Schedule from "@/components/dashboard/candidate/home/Schedule";
 import { resumeService } from "@/services/resume-service";
+import { applicationService } from "@/services/applicant-service";
 import { useSession } from "next-auth/react";
 import Loader from "@/components/ui/loader";
 import * as pdfjsLib from 'pdfjs-dist';
+import Image from "next/image";
+import Link from "next/link";
+import Button from "@/components/ui/button";
 
 // Set up PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
@@ -18,26 +22,10 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.j
 function Page() {
   const { data: session } = useSession();
   const [resumes, setResumes] = useState([]);
+  const [applications, setApplications] = useState([]);
   const [thumbnails, setThumbnails] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const applications = [
-    {
-      jobTitle: "Senior App Developer",
-      company: "Google",
-      companyIcon: "/assets/dashboard/companyLogo.svg",
-      date: "04/12/2024",
-      status: "Viewed",
-    },
-    {
-      jobTitle: "Frontend Engineer",
-      company: "Google",
-      companyIcon: "/assets/dashboard/companyLogo.svg",
-      date: "05/12/2024",
-      status: "Pending",
-    },
-  ];
 
   const tasks = [
     {
@@ -117,28 +105,52 @@ function Page() {
   };
 
   useEffect(() => {
-    const fetchResumes = async () => {
+    const fetchData = async () => {
       if (!session?.user?.id) return;
       
       try {
         setIsLoading(true);
+        
+        // Fetch resumes
         const userResumes = await resumeService.getUserResumes(session.user.id);
         setResumes(userResumes || []);
         
+        // Generate thumbnails for resumes
         userResumes.forEach(async (resume) => {
           if (resume.resumeLink) {
             await generateThumbnail(resume.resumeLink, resume._id);
           }
         });
+
+        // Fetch applications
+        const appsResponse = await applicationService.getCandidateApplications(session.user.id);
+        if (appsResponse && appsResponse.success) {
+          const transformedApplications = appsResponse.data.map(app => ({
+            id: app._id,
+            status: app.status,
+            jobTitle: app.jobDetails?.jobTitle || 'Unknown Position',
+            company: app.jobDetails?.recruiterInfo?.company?.name || 'Unknown Company',
+            date: new Date(app.appliedAt).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit'
+            }),
+            companyIcon: app.jobDetails?.recruiterInfo?.company?.logo,
+            analysis: app.analysis || {}
+          }));
+          setApplications(transformedApplications);
+        } else {
+          throw new Error(appsResponse?.message || 'Failed to fetch applications');
+        }
       } catch (err) {
-        console.error("Error fetching resumes:", err);
-        setError("Failed to load resumes");
+        console.error("Error fetching data:", err);
+        setError("Failed to load data");
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchResumes();
+    fetchData();
   }, [session]);
 
   const handlePrev = () => {
@@ -165,6 +177,12 @@ function Page() {
     return (
       <div className="text-center py-12">
         <p className="text-red-500">{error}</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="mt-4 text-blue-600 hover:underline"
+        >
+          Try again
+        </button>
       </div>
     );
   }
@@ -278,7 +296,7 @@ function Page() {
               <div className="flex flex-col items-center justify-center py-12 border rounded-lg">
                 <div className="max-w-md mx-auto text-center px-4">
                   <Image
-                    src="/no-resume.svg" // Make sure this image exists in your public folder
+                    src="/no-resume.svg"
                     alt="No resumes"
                     width={200}
                     height={200}
@@ -291,12 +309,6 @@ function Page() {
                     Start building your professional profile by creating your first resume.
                     Showcase your skills and experience to potential employers.
                   </p>
-                  {/* <button
-                    onClick={() => router.push("/dashboard/resume-builder")}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                  >
-                    Create Your First Resume
-                  </button> */}
                 </div>
               </div>
             )}
@@ -313,13 +325,47 @@ function Page() {
           <h2 className="text-lg md:text-xl font-semibold">
             Recent Applications
           </h2>
-          <button className="text-blue-600 hover:underline">See All</button>
+          <Link href="/dashboard/applications" className="text-blue-600 hover:underline">See All</Link>
         </div>
-        <div className="flex sm:flex-row flex-col flex-wrap gap-4">
-          {applications.map((app, index) => (
-            <ApplicationCard key={index} {...app} />
-          ))}
-        </div>
+        {applications.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {applications.slice(0, 3).map((app) => (
+              <ApplicationCard
+                key={app.id}
+                id={app.id}
+                status={app.status}
+                jobTitle={app.jobTitle}
+                company={app.company}
+                date={app.date}
+                companyIcon={app.companyIcon}
+                analysis={app.analysis}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-12 border rounded-lg">
+            <div className="max-w-md mx-auto text-center px-4">
+              <Image
+                src="/no-applications.svg"
+                alt="No applications"
+                width={200}
+                height={200}
+                className="mx-auto mb-6"
+              />
+              <h3 className="text-xl font-medium text-gray-900 mb-2">
+                No applications yet
+              </h3>
+              <p className="text-gray-500 mb-6">
+                You haven't applied to any jobs yet. Start your job search today!
+              </p>
+              <Link href="/job-listings">
+                <Button className="px-4 py-2">
+                  Browse Jobs
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

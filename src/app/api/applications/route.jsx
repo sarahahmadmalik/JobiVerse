@@ -75,38 +75,37 @@ export async function GET(request) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const jobId = searchParams.get('jobId');
     const candidateId = searchParams.get('candidateId');
 
-    // Validate query params
-    if (!jobId && !candidateId) {
+    // Validate candidateId matches session user
+    if (candidateId !== session.user.id) {
       return NextResponse.json(
-        { message: 'Either jobId or candidateId must be provided' },
-        { status: 400 }
+        { message: 'Unauthorized - Can only view your own applications' },
+        { status: 403 }
       );
     }
 
-    // Build query
-    const query = {};
-    if (jobId) query.jobId = jobId;
-    if (candidateId) {
-      // Ensure users can only see their own applications
-      if (candidateId !== session.user.id) {
-        return NextResponse.json(
-          { message: 'Unauthorized - Can only view your own applications' },
-          { status: 403 }
-        );
-      }
-      query.candidateId = candidateId;
-    }
-
-    const applications = await Application.find(query)
-      .populate('jobId', 'title company')
-      .populate('documents.resume', 'name createdAt')
-      .sort({ appliedAt: -1 });
+    // Fetch applications with full population
+ const applications = await Application.find({ candidateId })
+      .populate({
+        path: 'jobDetails',
+        populate: {
+          path: 'recruiterInfo',
+          select: 'companyName companyLogo', // Only get these fields from Recruiter
+          populate: {
+            path: 'company', // If recruiter has a company reference
+            select: 'name logo' // Get these fields from Company
+          }
+        }
+      })
+    .populate({
+        path: 'documents.resume', // Use the actual path from your schema
+        select: 'fileName resumeLink'
+      }).sort({ appliedAt: -1 });
 
     return NextResponse.json({
       success: true,
+      count: applications.length,
       data: applications
     });
   } catch (error) {

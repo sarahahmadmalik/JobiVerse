@@ -63,7 +63,7 @@ export const applicationService = {
    */
   getApplicationById: async (applicationId) => {
     try {
-      const response = await axios.get(`${API_URL}/applications/${applicationId}`);
+      const response = await axios.get(`${API_URL}/applications/getApplication?applicationId=${applicationId}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching application:', error);

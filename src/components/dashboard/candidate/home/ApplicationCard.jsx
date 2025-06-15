@@ -3,34 +3,28 @@ import Image from "next/image";
 import Button from "@/components/ui/button";
 import { Briefcase } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 const ApplicationCard = ({
-  id, // Add this prop to identify the specific application
-  status = "Viewed",
+  id,
+  status = "Submitted",
   jobTitle = "Senior App Developer",
-  company = "Google",
+  company = "Unknown Company",
   date = "04/12/2024",
   companyIcon = null,
+  analysis = {},
   fallbackIcon = <Briefcase className="w-5 h-5 text-white" />,
 }) => {
-  const router = useRouter();
-
   const statusStyles = {
-    Viewed: "bg-blue-100 text-blue-800",        // Neutral - Your application was seen
-    Submitted: "bg-gray-100 text-gray-800",    // Basic submission
-    Shortlisted: "bg-green-100 text-green-800", // Positive - They're interested!
-    Interview: "bg-indigo-100 text-indigo-800", // Special - Time-sensitive action
-    Rejected: "bg-red-100 text-red-800",       // Negative - Clear closure
-    Pending: "bg-amber-100 text-amber-800",    // Warning - Needs attention
-    Offer: "bg-emerald-100 text-emerald-800"   // Success - Final positive outcome
+    Submitted: "bg-amber-100 text-amber-800",
+    Reviewed: "bg-blue-100 text-blue-800",
+    Interview: "bg-indigo-100 text-indigo-800",
+    Rejected: "bg-red-100 text-red-800",
+    Shortlisted: "bg-green-100 text-green-800",
+    Hired: "bg-emerald-100 text-emerald-800"
   };
   
-  const badgeStyle = statusStyles[status] || statusStyles.Viewed;
-  
-  const handleViewInsights = () => {
-    router.push(`/dashboard/applications/${id}`);
-  };
+  const hasInsights = analysis?.topSectionsViewed?.length > 0;
+  const badgeStyle = statusStyles[status] || "bg-gray-100 text-gray-800";
   
   return (
     <div className="border border-[#DDDDDD] max-w-[450px] flex flex-col gap-3 rounded-[16px] w-full overflow-hidden min-h-[250px] px-4 py-4 relative">
@@ -40,22 +34,21 @@ const ApplicationCard = ({
         </span>
       </div>
       
-      <h3
-        className="text-[20px] font-bold text-gray-900 mb-1 truncate cursor-default"
-        title={jobTitle}
-      >
+      <h3 className="text-[20px] font-bold text-gray-900 mb-1 truncate cursor-default">
         {jobTitle}
       </h3>
       
       <div className="mb-1 flex gap-3 items-center">
         {companyIcon ? (
-          <Image
-            src={companyIcon}
-            alt={`${company} logo`}
-            width={24}
-            height={24}
-            className="w-6 h-6"
-          />
+          <div className="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center bg-white">
+            <Image
+              src={companyIcon}
+              alt={`${company} logo`}
+              width={28}
+              height={28}
+              className="object-contain"
+            />
+          </div>
         ) : (
           <div className="w-7 h-7 p-1 rounded-full flex justify-center items-center bg-blue-300">
             {fallbackIcon}
@@ -68,21 +61,22 @@ const ApplicationCard = ({
       
       <p className="text-gray-500 text-[14px]">Applied on {date}</p>
       
-      {/* Option 1: Using Link component */}
-      <Link href={`/application-manager/${id}`} className="mt-4">
-        <Button className="!w-full !py-1 text-white !text-[14px] !font-[500]">
-          View Insights
-        </Button>
-      </Link>
-      
-      {/* Option 2: Using onClick handler (uncomment this and comment the Link approach if preferred)
-      <Button 
-        className="!w-full !py-1 mt-4 text-white !text-[14px] !font-[500]"
-        onClick={handleViewInsights}
-      >
-        View Insights
-      </Button>
-      */}
+      <div className="mt-auto">
+        {hasInsights ? (
+          <Link href={`/application-manager/${id}`}>
+            <Button className="!w-full !py-2 text-white !text-[14px] !font-[500]">
+              View Insights
+            </Button>
+          </Link>
+        ) : (
+          <Button 
+            className="!w-full !py-2 !text-[14px] !font-[500] text-gray-400 cursor-not-allowed"
+            disabled
+          >
+            No insights yet
+          </Button>
+        )}
+      </div>
     </div>
   );
 };
