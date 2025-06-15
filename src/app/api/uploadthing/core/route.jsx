@@ -36,5 +36,33 @@ export const ourFileRouter = {
       url: file.url
     };
   }),
+
+  resumeUploader: f({
+    pdf: {
+      maxFileSize: "8MB", // Larger size for resumes
+      maxFileCount: 1,
+    }
+  })
+  .middleware(async ({ req }) => {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user) {
+      throw new UploadThingError("Unauthorized");
+    }
+
+    return { 
+      userId: session.user.id,
+      userEmail: session.user.email || null
+    };
+  })
+  .onUploadComplete(async ({ metadata, file }) => {
+    console.log("Resume upload complete");
+    return { 
+      success: true,
+      userId: metadata.userId,
+      url: file.url,
+      fileName: file.name
+    };
+  }),
 }
 

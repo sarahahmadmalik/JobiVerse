@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const resumeSchema = new mongoose.Schema({
   candidateId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Candidate',
+    ref: 'Auth',
     required: true
   },
   resumeLink: {
@@ -14,6 +14,11 @@ const resumeSchema = new mongoose.Schema({
   fileName: {
     type: String,
     required: true
+  },
+   content: {
+    type: mongoose.Schema.Types.Mixed,
+    required: true,
+    default: {}
   },
   fileType: {
     type: String,

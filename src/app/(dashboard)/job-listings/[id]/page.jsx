@@ -32,6 +32,7 @@ import { useSession } from 'next-auth/react'
 // Resume Selection Component
 function ChooseResume ({ onClose, job }) {
   const { data: session } = useSession()
+  const router = useRouter();
   const [selectedFile, setSelectedFile] = useState(null)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [uploadStatus, setUploadStatus] = useState('idle')
@@ -162,6 +163,15 @@ function ChooseResume ({ onClose, job }) {
       // document.body.removeChild(a)
       // URL.revokeObjectURL(url)
 
+      
+ const queryParams = new URLSearchParams({
+        resumeData: JSON.stringify(resume),
+        jobTitle: job.jobTitle,
+        jobId: job._id,
+        companyName: job.recruiterInfo?.company?.name || 'Unknown Company'
+      }).toString();
+
+      router.push(`/resume-builder?${queryParams}`);       
       onClose()
     } catch (error) {
       console.error('Error creating resume:', error)
