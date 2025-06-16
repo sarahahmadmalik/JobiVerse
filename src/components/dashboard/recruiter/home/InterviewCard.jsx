@@ -76,7 +76,7 @@ export default function InterviewCard({
             <Mail size={14} /> Message
           </button>
           <Button className="flex-1 !px-3 py-2  text-white rounded-md !text-sm font-medium !shadow-none">
-            View Profile
+            View Job
           </Button>
         </div>
       </div>

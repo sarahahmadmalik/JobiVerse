@@ -6,11 +6,13 @@ import InputAuto from "@/components/ui/input-auto";
 import { CalendarIcon, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import Spinner from "@/components/ui/spinner";
 import { createJobPost } from "@/services/jobpost-service";
 import { SKILLS } from "@/constants/constants";
 
 const JobPostingForm = () => {
   const { data: session } = useSession();
+  const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     jobTitle: "",

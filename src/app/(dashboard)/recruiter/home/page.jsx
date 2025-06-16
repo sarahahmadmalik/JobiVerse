@@ -19,8 +19,8 @@ function RecruiterHomePage() {
   const [recruiterTasks, setRecruiterTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
-    openPositions: 0,
-    activeCandidates: 0,
+    openPositions: 6,
+    activeCandidates: 2,
     interviewsThisWeek: 0,
     avgHireTime: 0
   });
@@ -275,7 +275,7 @@ function RecruiterHomePage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">Interviews This Week</p>
-                <p className="text-2xl font-bold mt-1">{stats.interviewsThisWeek}</p>
+                <p className="text-2xl font-bold mt-1">{upcomingInterviews?.length || 0}</p>
               </div>
               <div className="p-3 rounded-full bg-purple-100 text-purple-600">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -286,7 +286,7 @@ function RecruiterHomePage() {
                 </svg>
               </div>
             </div>
-            <p className="text-xs text-gray-500 mt-2">3 tomorrow</p>
+            <p className="text-xs text-gray-500 mt-2">+1 from yesterday</p>
           </div>
 
           {/* Average Time to Hire */}

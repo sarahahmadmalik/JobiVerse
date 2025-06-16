@@ -5,6 +5,7 @@ import Interview from '@/models/interview';
 import Application from '@/models/application';
 import JobPost from '@/models/jobpost';
 import connectDB from '@/utils/db';
+import Candidate from '@/models/candidate';
 import { NextResponse } from 'next/server';
 import axios from 'axios';
 
@@ -155,18 +156,26 @@ export async function GET(request) {
   await connectDB();
 
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = session.user.id; // Get user ID from session
-    const userRole = session.user.role; // Assuming role is stored in session
+    const userId = session.user.id; // This is the authId
+    const userRole = session.user.role;
 
     let query = {};
     
     if (userRole === 'recruiter') {
-      // For recruiters, find interviews where they are listed as interviewers
       query['recruiterId'] = userId;
     } else if (userRole === 'candidate') {
-      // For candidates, find interviews where they are listed as candidates
-      query.candidateIds = userId;
+      // First find the candidate document using authId
+      const candidate = await Candidate.findOne({ authId: userId });
+      
+      if (!candidate) {
+        return NextResponse.json(
+          { message: 'Candidate profile not found' },
+          { status: 404 }
+        );
+      }
+      
+      // Now use the candidate's _id to find interviews
+      query['candidateIds'] = candidate._id;
     } else {
       return NextResponse.json(
         { message: 'Invalid user role' },
@@ -174,20 +183,18 @@ export async function GET(request) {
       );
     }
 
-    console.log(query)
-
     const interviews = await Interview.find(query)
       .populate({
         path: 'jobDetails',
-        select: 'jobTitle' // Only populate necessary fields
+        select: 'jobTitle'
       })
       .populate({
-        path: 'candidates',
-        select: 'firstName lastName email' // Only populate necessary fields
+        path: 'candidateIds',
+        select: 'firstName lastName email'
       })
       .populate({
         path: 'recruiterId',
-        select: 'name email' // Only populate necessary fields
+        select: 'name email'
       })
       .sort({ startTime: 1 });
 

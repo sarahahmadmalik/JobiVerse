@@ -9,6 +9,7 @@ import ApplicationCard from "@/components/dashboard/candidate/home/ApplicationCa
 import Schedule from "@/components/dashboard/candidate/home/Schedule";
 import { resumeService } from "@/services/resume-service";
 import { applicationService } from "@/services/applicant-service";
+import { interviewService } from "@/services/interview-service"; // Add interview service
 import { useSession } from "next-auth/react";
 import Loader from "@/components/ui/loader";
 import * as pdfjsLib from 'pdfjs-dist';
@@ -23,39 +24,35 @@ function Page() {
   const { data: session } = useSession();
   const [resumes, setResumes] = useState([]);
   const [applications, setApplications] = useState([]);
+  const [interviews, setInterviews] = useState([]); // Add interviews state
   const [thumbnails, setThumbnails] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const tasks = [
-    {
-      month: "Apr",
-      day: "15",
-      title: "Meeting with recruiter from ABC",
-      time: "10:00 AM",
-      location: "Zoom Conference",
-      priority: 1
-    },
-    {
-      month: "Apr",
-      day: "16",
-      title: "Complete Application for XYZ Position",
-      time: "2:30 PM"
-    },
-    {
-      month: "Apr",
-      day: "17",
-      title: "Follow up with HR at Google",
-      time: "11:00 AM",
-      location: "Phone Call"
-    }
-  ];
 
   const navigationPrevRef = useRef(null);
   const navigationNextRef = useRef(null);
   const [isBeginning, setIsBeginning] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
   const [swiper, setSwiper] = useState(null);
+
+  const formatInterviewTime = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffDays = Math.floor((date - now) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+      return `Today, ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    } else if (diffDays === 1) {
+      return `Tomorrow, ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    } else {
+      return date.toLocaleDateString([], { 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+    }
+  };
 
   const generateThumbnail = async (pdfUrl, resumeId) => {
     try {
@@ -142,6 +139,26 @@ function Page() {
         } else {
           throw new Error(appsResponse?.message || 'Failed to fetch applications');
         }
+
+        // Fetch interviews for candidate
+        const candidateInterviews = await interviewService.getInterviewsAsCandidate(session.user.id);
+        console.log(candidateInterviews)
+        const transformedInterviews = candidateInterviews.map(interview => ({
+          id: interview._id,
+          title: interview.jobDetails?.jobTitle || 'Interview',
+          // month: format(new Date(interview.startTime), "MMM"),
+          // day: format(new Date(interview.startTime), "d"),
+          time: formatInterviewTime(interview.startTime),
+          location: interview.location === "zoom" ? "Virtual Meeting" : interview.address || "Office",
+          candidate: session.user.name || "",
+          priority: 1, // High priority for upcoming interviews
+          type: interview.stage || 'Screening',
+          meetingType: interview.location === "zoom" ? "Zoom" : "In-Person",
+          meetingLink: interview.joinUrl,
+          interviewers: interview.interviewers?.map(i => i.name) || []
+        }));
+        setInterviews(transformedInterviews);
+
       } catch (err) {
         console.error("Error fetching data:", err);
         setError("Failed to load data");
@@ -210,22 +227,10 @@ function Page() {
                   slidesPerView={1}
                   spaceBetween={10}
                   breakpoints={{
-                    640: {
-                      slidesPerView: 1,
-                      spaceBetween: 10,
-                    },
-                    768: {
-                      slidesPerView: 2,
-                      spaceBetween: 20,
-                    },
-                    1024: {
-                      slidesPerView: 2,
-                      spaceBetween: 20,
-                    },
-                    1920: {
-                      slidesPerView: 3,
-                      spaceBetween: 30,
-                    },
+                    640: { slidesPerView: 1, spaceBetween: 10 },
+                    768: { slidesPerView: 2, spaceBetween: 20 },
+                    1024: { slidesPerView: 2, spaceBetween: 20 },
+                    1920: { slidesPerView: 3, spaceBetween: 30 },
                   }}
                   style={{ width: "100%" }}
                   className="w-full"
@@ -247,9 +252,7 @@ function Page() {
                   ref={navigationPrevRef}
                   onClick={handlePrev}
                   className={`absolute left-1 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow-md z-10 ${
-                    isBeginning
-                      ? "opacity-30 cursor-not-allowed"
-                      : "hover:bg-gray-100"
+                    isBeginning ? "opacity-30 cursor-not-allowed" : "hover:bg-gray-100"
                   }`}
                   disabled={isBeginning}
                   aria-label="Previous slide"
@@ -316,7 +319,7 @@ function Page() {
         </div>
 
         <div className="lg:w-1/3">
-          <Schedule events={tasks} />
+          <Schedule events={interviews} />
         </div>
       </div>
 
