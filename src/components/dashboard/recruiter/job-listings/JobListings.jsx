@@ -17,7 +17,6 @@ import Dropdown from "@/components/ui/dropdown";
 import { useRouter } from 'next/navigation';
 
 export default function RecruiterJobsForYou({ jobs, onDelete, onToggleStatus, onEdit }) {
-    console.log(jobs)
     const router = useRouter();
     const [sortOption, setSortOption] = useState('recent');
     const sortOptions = [
@@ -43,7 +42,6 @@ export default function RecruiterJobsForYou({ jobs, onDelete, onToggleStatus, on
 
     const getBackgroundColor = (index) => bgColors[index % bgColors.length];
   
-    // Updated experience level mapping
     const getExperienceValue = (job) => {
         switch(job.experienceLevel) {
             case 'Entry': return 1;
@@ -54,18 +52,39 @@ export default function RecruiterJobsForYou({ jobs, onDelete, onToggleStatus, on
             default: return 0;
         }
     };
+
+    console.log(jobs)
   
-    // Updated sorting function
-    const sortedJobs = [...jobs].sort((a, b) => {
+    // Enhanced job processing to count applications
+    const processedJobs = jobs.map(job => {
+        // Count applications by status if needed
+        const applicationCount = job.applications?.length || 0;
+        
+        // You could also count by status like this:
+        const statusCounts = job.applications?.reduce((acc, app) => {
+            acc[app.status] = (acc[app.status] || 0) + 1;
+            return acc;
+        }, {}) || {};
+
+        return {
+            ...job,
+            applicationCount,
+            statusCounts
+        };
+    });
+
+    console.log(processedJobs)
+
+    const sortedJobs = [...processedJobs].sort((a, b) => {
         switch (sortOption) {
             case 'salary-high':
                 return (b.salary?.value || 0) - (a.salary?.value || 0);
             case 'salary-low':
                 return (a.salary?.value || 0) - (b.salary?.value || 0);
             case 'applicants-high':
-                return (b.applications?.length || 0) - (a.applications?.length || 0);
+                return (b.applicationCount || 0) - (a.applicationCount || 0);
             case 'applicants-low':
-                return (a.applications?.length || 0) - (b.applications?.length || 0);
+                return (a.applicationCount || 0) - (b.applicationCount || 0);
             case 'experience-high':
                 return getExperienceValue(b) - getExperienceValue(a);
             case 'experience-low':
@@ -128,7 +147,8 @@ export default function RecruiterJobsForYou({ jobs, onDelete, onToggleStatus, on
                                         workMode: job.workMode,
                                         experienceLevel: job.experienceLevel,
                                         jobType: job.jobType,
-                                        applicants: job.applications?.length || 0,
+                                        applicants: job.applications?.length || 0, // Using the processed count
+                                       
                                         company: job.recruiterInfo?.company?.name,
                                         postedAt: new Date(job.postedAt).toLocaleDateString(),
                                         isOpen: job.isOpen,

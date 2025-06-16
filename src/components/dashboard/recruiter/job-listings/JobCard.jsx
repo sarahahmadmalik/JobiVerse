@@ -9,6 +9,7 @@ function RecruiterJobCard({
   job,
   backgroundColor = "bg-white",
   onDelete,
+  
   onToggleStatus,
   onView,
 }) {
@@ -149,7 +150,7 @@ function RecruiterJobCard({
             <span>{job.location}</span>
           </div>
           <div className="mt-1 text-sm text-gray-500">
-            <span className="font-medium">{job.applications?.length || 0}</span> applicant
+            <span className="font-medium">{job.applicants || 0}</span> applicant
             {job.applications?.length !== 1 ? "s" : ""}
           </div>
         </div>

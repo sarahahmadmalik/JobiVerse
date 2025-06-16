@@ -27,9 +27,9 @@ export default function InterviewCard({
         </div>
 
         <div className="mt-4 flex items-center gap-2">
-          {status === "Confirmed" ? (
+          {status === "Invited" ? (
             <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-              <CheckCircle2 size={14} /> Confirmed
+              <CheckCircle2 size={14} /> Invited
             </span>
           ) : (
             <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">

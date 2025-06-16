@@ -27,6 +27,7 @@ export default function RecruiterJobsPage () {
 
         if (session?.user?.id) {
           const jobPosts = await getJobPosts(session.user.id)
+          console.log(jobPosts)
           setJobs(jobPosts)
           filterJobs(jobPosts, statusFilter)
         }

@@ -46,6 +46,13 @@ export async function POST(request) {
     });
 
     await newApplication.save();
+     await JobPost.findByIdAndUpdate(
+      jobId,
+      { $push: { applications: newApplication._id } },
+      { new: true, session }
+    );
+
+    await session.commitTransaction();
 
     return NextResponse.json({
       success: true,

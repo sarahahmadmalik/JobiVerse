@@ -48,7 +48,7 @@ export const applicationService = {
    */
   getJobApplications: async (jobId) => {
     try {
-      const response = await axios.get(`${API_URL}/applications?jobId=${jobId}`);
+      const response = await axios.get(`${API_URL}/applications/getApplicationByJob?jobId=${jobId}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching job applications:', error);
@@ -87,5 +87,29 @@ export const applicationService = {
       console.error('Error updating application status:', error);
       throw error;
     }
+  },
+
+updateApplicantsStatus: async (applicantIds, status) => {
+  try {
+    const response = await fetch('/api/applications/status', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ids: applicantIds,
+        status
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to update status');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error updating applicant status:', error);
+    throw error;
   }
+}
 };
