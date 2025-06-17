@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
    images: {
-    domains: ['utfs.io'],
+    domains: ['utfs.io', 'h44tjakkou.ufs.sh'],
   },
   webpack: (config, { isServer }) => {
     // Exclude canvas and encoding from client-side bundles

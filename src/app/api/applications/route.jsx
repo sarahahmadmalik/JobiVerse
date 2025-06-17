@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import connectDB from '@/utils/db';
 import Application from '@/models/application';
+import JobPost from '@/models/jobpost';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 // Create a new application
@@ -49,10 +50,10 @@ export async function POST(request) {
      await JobPost.findByIdAndUpdate(
       jobId,
       { $push: { applications: newApplication._id } },
-      { new: true, session }
+      { new: true }
     );
 
-    await session.commitTransaction();
+    // await session.commitTransaction();
 
     return NextResponse.json({
       success: true,

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import connectDB from '@/utils/db'
 import JobPost from '@/models/jobpost'
 import Recruiter from '@/models/recruiter'
+import Application from '@/models/application'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 
 export async function GET (request, { params }) {

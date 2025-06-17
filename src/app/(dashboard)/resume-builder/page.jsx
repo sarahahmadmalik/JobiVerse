@@ -414,8 +414,23 @@ const ResumeBuilder = () => {
     `
       document.body.appendChild(container)
 
+      
+
       // Clone the element while preserving all original styles
       const clone = input.cloneNode(true)
+          const style = document.createElement('style');
+    style.textContent = `
+      h2{
+        page-break-after: avoid;
+        margin-top: 10px !important;
+        margin-bottom: 8px !important;
+      }
+      .border-b {
+        border-bottom-width: 1px !important;
+        padding-bottom: 4px !important;
+      }
+    `;
+    clone.appendChild(style);
       container.appendChild(clone)
 
       // Wait for fonts and images to load

@@ -80,7 +80,7 @@ export default function ApplicationInsightsPage() {
       {/* Header with back button */}
       <div className="mb-4">
         <Link
-          href="/dashboard/applications"
+          href="/application-manager"
           className={`flex items-center gap-2 text-[${colors.primary}] text-sm group relative`}
         >
           <ArrowLeft size={16} />
@@ -154,6 +154,7 @@ export default function ApplicationInsightsPage() {
             <ul className="list-disc list-inside text-sm">
               <li>Work Experience</li>
               <li>Skills</li>
+               <li>Summary</li>
               <li>Education</li>
             </ul>
           </div>
@@ -161,17 +162,61 @@ export default function ApplicationInsightsPage() {
       </div>
 
       {/* Static Resume Heatmap */}
-      <div className="mb-8">
-        <h2 className={`text-lg font-medium mb-4 text-[${colors.textPrimary}]`}>Resume Heatmap Analysis</h2>
-        <p className={`text-sm text-[${colors.textSecondary}] mb-4`}>
-          This visualization shows which sections of your resume received the most attention from recruiters.
-        </p>
-        <div className="bg-gray-50 p-4 rounded-lg flex justify-center">
-          <div className="relative w-full max-w-lg h-96 bg-gray-200 rounded flex items-center justify-center">
-            <p className={`text-[${colors.textSecondary}]`}>Resume heatmap visualization will appear here</p>
-          </div>
+{/* Static Resume Heatmap */}
+<div className="mb-8">
+  <h2 className={`text-lg font-medium mb-4 text-[${colors.textPrimary}]`}>Resume Heatmap Analysis</h2>
+  <p className={`text-sm text-[${colors.textSecondary}] mb-4`}>
+    This visualization shows which sections of your resume received the most attention from recruiters.
+  </p>
+  <div className="bg-gray-50 p-4 rounded-lg">
+    {/* Container for horizontal scrolling */}
+    <div className="flex overflow-x-auto pb-4 -mx-4 px-4"> {/* Added negative margins and padding to compensate for container padding */}
+      {/* First A4 Image */}
+      <div className="flex-shrink-0 mr-4" style={{ width: '210mm', height: '297mm' }}> {/* A4 dimensions */}
+        <div className="relative w-full h-full bg-white shadow-md border border-gray-200 overflow-hidden">
+          <img 
+            src="/img2.png" 
+            alt="Resume page 1 heatmap" 
+            className="w-full h-full object-contain"
+          />
         </div>
       </div>
+      
+      {/* Second A4 Image */}
+      <div className="flex-shrink-0 mr-4" style={{ width: '210mm', height: '297mm' }}>
+        <div className="relative w-full h-full bg-white shadow-md border border-gray-200 overflow-hidden">
+          <img 
+            src="/img3.png" 
+            alt="Resume page 2 heatmap" 
+            className="w-full h-full object-contain"
+          />
+        </div>
+      </div>
+      
+      {/* Third A4 Image */}
+      <div className="flex-shrink-0" style={{ width: '210mm', height: '297mm' }}>
+        <div className="relative w-full h-full bg-white shadow-md border border-gray-200 overflow-hidden">
+          <img 
+            src="/img4.png" 
+            alt="Resume page 3 heatmap" 
+            className="w-full h-full object-contain"
+          />
+        </div>
+      </div>
+    </div>
+    
+    {/* Optional: Page indicators */}
+    <div className="flex justify-center mt-4">
+      {[1, 2, 3].map((page) => (
+        <div 
+          key={page}
+          className="w-2 h-2 rounded-full bg-gray-300 mx-1"
+          aria-label={`Page ${page}`}
+        />
+      ))}
+    </div>
+  </div>
+</div>
 
       {/* Static Improvement Suggestions */}
       <div className="mb-8">

@@ -28,104 +28,234 @@ import { generateResume } from '@/services/resume-service'
 import Link from 'next/link'
 import Loader from '@/components/ui/loader'
 import { useSession } from 'next-auth/react'
+import { useUploadThing } from '@/utils/uploadthing'
+import { resumeService } from '@/services/resume-service'
+import { applicationService } from '@/services/applicant-service'
+import JobSubmissionPopup from '@/components/dashboard/candidate/job-listing/JobSubmissionPopup'
+import confetti from 'canvas-confetti'
 
 // Resume Selection Component
-function ChooseResume ({ onClose, job }) {
-  const { data: session } = useSession()
+function ChooseResume({ onClose, job }) {
+  const { data: session } = useSession();
   const router = useRouter();
-  const [selectedFile, setSelectedFile] = useState(null)
-  const [uploadProgress, setUploadProgress] = useState(0)
-  const [uploadStatus, setUploadStatus] = useState('idle')
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [generationStatus, setGenerationStatus] = useState('')
-  const [previousResumes, setPreviousResumes] = useState([
-    { id: 1, name: 'My Resume (2023)', size: '2.4MB', date: 'Jan 15, 2023' },
-    { id: 2, name: 'Developer Resume', size: '1.8MB', date: 'Mar 22, 2023' }
-  ])
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState('idle');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationStatus, setGenerationStatus] = useState('');
+  const [previousResumes, setPreviousResumes] = useState([]);
+  const [isApplying, setIsApplying] = useState(false);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+
+  // Configure UploadThing
+  const { startUpload } = useUploadThing('resumeUploader', {
+    onClientUploadComplete: () => {},
+    onUploadError: (error) => {
+      console.error('Upload error:', error);
+      setUploadStatus('error');
+      alert('Failed to upload resume');
+    },
+  });
+
+  // Fetch user's existing resumes
+  useEffect(() => {
+    const fetchResumes = async () => {
+      if (session?.user?.id) {
+        try {
+          const response = await resumeService.getUserResumes(session.user.id);
+          if (response) {
+            setPreviousResumes(response.map(resume => ({
+              id: resume._id,
+              name: resume.fileName || 'My Resume',
+              size: "0.5MB",
+              date: new Date(resume.createdAt).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+              }),
+              url: resume.resumeLink
+            })));
+          }
+        } catch (error) {
+          console.error('Error fetching resumes:', error);
+        }
+      }
+    };
+    fetchResumes();
+  }, [session]);
 
   const handleFileUpload = e => {
-    const file = e.target.files[0]
-    if (!file) return
+    const file = e.target.files[0];
+    if (!file) return;
 
     const validTypes = [
       'application/pdf',
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    ]
+    ];
     if (!validTypes.includes(file.type)) {
-      alert('Please upload a PDF or Word document')
-      return
+      alert('Please upload a PDF or Word document');
+      return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('File size should be less than 5MB')
-      return
+      alert('File size should be less than 5MB');
+      return;
     }
 
     const newFile = {
       name: file.name,
       size: (file.size / (1024 * 1024)).toFixed(1) + 'MB',
-      type: file.type
-    }
+      type: file.type,
+      file // Keep the original file object
+    };
 
-    setSelectedFile(newFile)
-    simulateUpload(newFile)
-  }
+    setSelectedFile(newFile);
+    simulateUpload(newFile);
+  };
 
-  const simulateUpload = file => {
-    if (!file) return
+  const simulateUpload = async file => {
+    if (!file) return;
 
-    setUploadStatus('uploading')
-    setUploadProgress(0)
+    setUploadStatus('uploading');
+    setUploadProgress(0);
 
+    // Simulate progress
     const interval = setInterval(() => {
       setUploadProgress(prev => {
-        const newProgress = prev + Math.floor(Math.random() * 10) + 5
-        if (newProgress >= 100) {
-          clearInterval(interval)
-          setUploadStatus('success')
-          setPreviousResumes(prev => [
-            {
-              id: Date.now(),
-              name: file.name,
-              size: file.size,
-              date: new Date().toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric'
-              })
-            },
-            ...prev
-          ])
-          return 100
+        const newProgress = prev + Math.floor(Math.random() * 10) + 5;
+        if (newProgress >= 90) { // Stop at 90% to wait for actual upload
+          clearInterval(interval);
+          return 90;
         }
-        return newProgress
-      })
-    }, 300)
-  }
+        return newProgress;
+      });
+    }, 300);
+
+    try {
+      // Start actual upload to UploadThing
+      const uploadResult = await startUpload([file.file]);
+      const resumeUrl = uploadResult[0].url;
+      
+      // Save to database
+      const savedResume = await saveResumeData(resumeUrl, file.file);
+      
+      // Update progress to 100%
+      clearInterval(interval);
+      setUploadProgress(100);
+      setUploadStatus('success');
+      
+      // Add to previous resumes
+      setPreviousResumes(prev => [
+        {
+          id: savedResume._id,
+          name: savedResume.fileName,
+          size: (savedResume.size / (1024 * 1024)).toFixed(1) + 'MB',
+          date: new Date().toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+          }),
+          url: savedResume.resumeLink
+        },
+        ...prev
+      ]);
+      
+      return savedResume;
+    } catch (error) {
+      clearInterval(interval);
+      setUploadStatus('error');
+      throw error;
+    }
+  };
+
+  const saveResumeData = async (resumeUrl, file) => {
+    const resumeDataToSave = {
+      jobId: job._id,
+      jobTitle: job.jobTitle,
+      resumeLink: resumeUrl,
+      fileName: file.name,
+      size: file.size,
+      fileType: file.type
+    };
+
+    return await resumeService.saveResume(
+      session.user.id,
+      resumeDataToSave
+    );
+  };
 
   const removeFile = () => {
-    setSelectedFile(null)
-    setUploadProgress(0)
-    setUploadStatus('idle')
-  }
+    setSelectedFile(null);
+    setUploadProgress(0);
+    setUploadStatus('idle');
+  };
 
   const selectPreviousResume = resume => {
     setSelectedFile({
       name: resume.name,
       size: resume.size,
-      type: 'application/pdf'
-    })
-    setUploadStatus('success')
-  }
+      type: 'application/pdf',
+      url: resume.url,
+      id: resume.id
+    });
+    setUploadStatus('success');
+  };
+
+  const handleUseResume = async () => {
+    try {
+      setIsApplying(true);
+      
+      let resumeId;
+      
+      if (selectedFile?.url) {
+        // Using existing resume
+        resumeId = selectedFile.id;
+      } else if (selectedFile?.file) {
+        // Wait for upload to complete if still in progress
+        if (uploadStatus !== 'success') {
+          throw new Error('Please wait for upload to complete');
+        }
+        // Find the newly uploaded resume in previousResumes
+        const newResume = previousResumes.find(r => r.name === selectedFile.name);
+        if (!newResume) throw new Error('Resume not found');
+        resumeId = newResume.id;
+      } else {
+        throw new Error('No resume selected');
+      }
+
+      // Submit application
+      await applicationService.applyForJob(
+        job._id,
+        session.user.id,
+        resumeId
+      );
+
+      // Show confetti animation
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+
+      // Show success popup
+      setShowSuccessPopup(true);
+      
+    } catch (error) {
+      console.error('Error applying:', error);
+      alert(error.message || 'Failed to submit application');
+    } finally {
+      setIsApplying(false);
+    }
+  };
 
   const handleCreateNewResume = async () => {
     try {
-      setIsGenerating(true)
-      setGenerationStatus('Preparing your personalized resume...')
+      setIsGenerating(true);
+      setGenerationStatus('Preparing your personalized resume...');
 
       if (!session?.user?.id) {
-        throw new Error('Please sign in to generate resume')
+        throw new Error('Please sign in to generate resume');
       }
 
       const statusMessages = [
@@ -133,38 +263,25 @@ function ChooseResume ({ onClose, job }) {
         'Matching your skills with job requirements...',
         'Crafting the perfect resume...',
         'Almost there! Finalizing your document...'
-      ]
+      ];
 
-      let messageIndex = 0
+      let messageIndex = 0;
       const messageInterval = setInterval(() => {
-        setGenerationStatus(statusMessages[messageIndex])
-        messageIndex = (messageIndex + 1) % statusMessages.length
-      }, 3000)
+        setGenerationStatus(statusMessages[messageIndex]);
+        messageIndex = (messageIndex + 1) % statusMessages.length;
+      }, 3000);
 
-      setGenerationStatus('Fetching your profile...')
-      const userData = await getCandidateProfile(session.user.id)
+      setGenerationStatus('Fetching your profile...');
+      const userData = await getCandidateProfile(session.user.id);
 
-      setGenerationStatus('Generating your tailored resume...')
-      const resume = await generateResume(userData, job)
+      setGenerationStatus('Generating your tailored resume...');
+      const resume = await generateResume(userData, job);
 
-      clearInterval(messageInterval)
+      clearInterval(messageInterval);
 
-      setGenerationStatus('Finished')
-      console.log(resume)
-      // const blob = new Blob([resume], { type: 'text/markdown' })
-      // const url = URL.createObjectURL(blob)
-      // const a = document.createElement('a')
-      // a.href = url
-      // a.download = `${userData.firstName}_${
-      //   userData.lastName
-      // }_${job.jobTitle.replace(/\s+/g, '_')}_Resume.md`
-      // document.body.appendChild(a)
-      // a.click()
-      // document.body.removeChild(a)
-      // URL.revokeObjectURL(url)
-
+      setGenerationStatus('Finished');
       
- const queryParams = new URLSearchParams({
+      const queryParams = new URLSearchParams({
         resumeData: JSON.stringify(resume),
         jobTitle: job.jobTitle,
         jobId: job._id,
@@ -172,188 +289,203 @@ function ChooseResume ({ onClose, job }) {
       }).toString();
 
       router.push(`/resume-builder?${queryParams}`);       
-      onClose()
+      onClose();
     } catch (error) {
-      console.error('Error creating resume:', error)
-      alert(`Failed to generate resume: ${error.message}`)
+      console.error('Error creating resume:', error);
+      alert(`Failed to generate resume: ${error.message}`);
     } finally {
-      setIsGenerating(false)
-      setGenerationStatus('')
+      setIsGenerating(false);
+      setGenerationStatus('');
     }
-  }
+  };
+
+  const handlePopupClose = () => {
+    setShowSuccessPopup(false);
+    onClose();
+    router.push('/job-listings');
+  };
 
   return (
-    <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'>
-      <div className='max-w-md w-full bg-white rounded-lg p-6 shadow-lg relative'>
-        <button
-          onClick={onClose}
-          className='absolute top-2 right-2 text-gray-400 hover:text-gray-600'
-          aria-label='Close'
-        >
-          <X size={20} />
-        </button>
+    <>
+      <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'>
+        <div className='max-w-md w-full bg-white rounded-lg p-6 shadow-lg relative'>
+          <button
+            onClick={onClose}
+            className='absolute top-2 right-2 text-gray-400 hover:text-gray-600'
+            aria-label='Close'
+          >
+            <X size={20} />
+          </button>
 
-        <h1 className='text-xl font-bold text-center text-gray-900 mb-2'>
-          Choose Your Resume
-        </h1>
-        <p className='text-gray-500 text-center text-sm mb-6'>
-          Select an option below to attach your resume for the application.
-        </p>
+          <h1 className='text-xl font-bold text-center text-gray-900 mb-2'>
+            Choose Your Resume
+          </h1>
+          <p className='text-gray-500 text-center text-sm mb-6'>
+            Select an option below to attach your resume for the application.
+          </p>
 
-        {isGenerating ? (
-          <div className='flex flex-col items-center justify-center p-6'>
-            <Loader className='mb-4' />
-            <p className='text-center text-indigo-600 animate-pulse'>
-              {generationStatus}
-            </p>
-            <p className='text-xs text-gray-500 mt-2'>
-              This usually takes about 10-20 seconds...
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className='relative mb-4'>
-              <select
-                className='w-full border border-gray-300 text-gray-500 rounded-lg p-3 pr-10 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300'
-                onChange={e => {
-                  if (e.target.value) {
-                    const resume = previousResumes.find(
-                      r => r.id === parseInt(e.target.value)
-                    )
-                    if (resume) selectPreviousResume(resume)
-                  }
-                }}
-              >
-                <option value=''>Select from Previous Resumes</option>
-                {previousResumes.map(resume => (
-                  <option key={resume.id} value={resume.id}>
-                    {resume.name} ({resume.size}) - {resume.date}
-                  </option>
-                ))}
-              </select>
-              <div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none'>
-                <svg
-                  className='h-5 w-5 text-gray-400'
-                  fill='none'
-                  viewBox='0 0 24 24'
-                  stroke='currentColor'
+          {isGenerating ? (
+            <div className='flex flex-col items-center justify-center p-6'>
+              <Loader className='mb-4' />
+              <p className='text-center text-indigo-600 animate-pulse'>
+                {generationStatus}
+              </p>
+              <p className='text-xs text-gray-500 mt-2'>
+                This usually takes about 10-20 seconds...
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className='relative mb-4'>
+                <select
+                  className='w-full border border-gray-300 text-gray-500 rounded-lg p-3 pr-10 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300'
+                  onChange={e => {
+                    if (e.target.value) {
+                      const resume = previousResumes.find(
+                        r => r.id === parseInt(e.target.value)
+                      );
+                      if (resume) selectPreviousResume(resume);
+                    }
+                  }}
                 >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M19 9l-7 7-7-7'
-                  />
-                </svg>
-              </div>
-            </div>
-
-            <div className='border border-dashed border-gray-300 rounded-lg p-6 mb-4'>
-              <div className='text-center'>
-                <p className='text-sm text-gray-600 mb-4'>
-                  Browse and choose the files you want to upload from your
-                  computer or drop it here.
-                </p>
-                <label htmlFor='file-upload' className='cursor-pointer'>
-                  <div className='inline-flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 text-white mb-2'>
-                    <Plus size={20} />
-                  </div>
-                  <p className='text-sm text-indigo-600 font-medium'>
-                    Choose file
-                  </p>
-                  <p className='text-xs text-gray-500 mt-1'>
-                    PDF or DOCX (Max. 5MB)
-                  </p>
-                  <input
-                    id='file-upload'
-                    type='file'
-                    className='hidden'
-                    onChange={handleFileUpload}
-                    accept='.pdf,.doc,.docx'
-                  />
-                </label>
-              </div>
-            </div>
-
-            {selectedFile && (
-              <div className='mb-6'>
-                <div className='flex items-center justify-between mb-1'>
-                  <div className='flex items-center'>
-                    <div className='bg-red-500 text-white w-8 h-8 flex items-center justify-center rounded'>
-                      <svg
-                        width='16'
-                        height='16'
-                        viewBox='0 0 24 24'
-                        fill='none'
-                        xmlns='http://www.w3.org/2000/svg'
-                      >
-                        <path
-                          d='M13 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V9L13 2Z'
-                          stroke='white'
-                          strokeWidth='2'
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                        />
-                      </svg>
-                    </div>
-                    <div className='ml-3'>
-                      <p className='text-sm font-medium'>{selectedFile.name}</p>
-                      <p className='text-xs text-gray-500'>
-                        {selectedFile.size}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={removeFile}
-                    className='text-gray-400 hover:text-gray-600'
+                  <option value=''>Select from Previous Resumes</option>
+                  {previousResumes.map(resume => (
+                    <option key={resume.id} value={resume.id}>
+                      {resume.name} ({resume.size}) - {resume.date}
+                    </option>
+                  ))}
+                </select>
+                <div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none'>
+                  <svg
+                    className='h-5 w-5 text-gray-400'
+                    fill='none'
+                    viewBox='0 0 24 24'
+                    stroke='currentColor'
                   >
-                    <X size={16} />
-                  </button>
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M19 9l-7 7-7-7'
+                    />
+                  </svg>
                 </div>
-
-                {uploadStatus === 'uploading' && (
-                  <>
-                    <div className='w-full bg-gray-200 rounded-full h-1.5'>
-                      <div
-                        className='bg-indigo-500 h-1.5 rounded-full transition-all duration-300'
-                        style={{ width: `${uploadProgress}%` }}
-                      ></div>
-                    </div>
-                    <p className='text-xs text-right text-gray-500 mt-1'>
-                      Uploading... {uploadProgress}%
-                    </p>
-                  </>
-                )}
-
-                {uploadStatus === 'success' && (
-                  <p className='text-xs text-green-500 mt-1'>
-                    ✓ Successfully uploaded
-                  </p>
-                )}
               </div>
-            )}
 
-            <div className='grid grid-cols-2 gap-4'>
-              <button
-                className='bg-indigo-500 hover:bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium transition-colors'
-                disabled={!selectedFile || uploadStatus === 'uploading'}
-              >
-                {uploadStatus === 'uploading'
-                  ? 'Uploading...'
-                  : 'Use This Resume'}
-              </button>
-              <button
-                className='border border-indigo-500 text-indigo-500 hover:bg-indigo-50 py-3 px-4 rounded-lg font-medium transition-colors'
-                onClick={handleCreateNewResume}
-              >
-                Create New
-              </button>
-            </div>
-          </>
-        )}
+              <div className='border border-dashed border-gray-300 rounded-lg p-6 mb-4'>
+                <div className='text-center'>
+                  <p className='text-sm text-gray-600 mb-4'>
+                    Browse and choose the files you want to upload from your
+                    computer or drop it here.
+                  </p>
+                  <label htmlFor='file-upload' className='cursor-pointer'>
+                    <div className='inline-flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 text-white mb-2'>
+                      <Plus size={20} />
+                    </div>
+                    <p className='text-sm text-indigo-600 font-medium'>
+                      Choose file
+                    </p>
+                    <p className='text-xs text-gray-500 mt-1'>
+                      PDF or DOCX (Max. 5MB)
+                    </p>
+                    <input
+                      id='file-upload'
+                      type='file'
+                      className='hidden'
+                      onChange={handleFileUpload}
+                      accept='.pdf,.doc,.docx'
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {selectedFile && (
+                <div className='mb-6'>
+                  <div className='flex items-center justify-between mb-1'>
+                    <div className='flex items-center'>
+                      <div className='bg-red-500 text-white w-8 h-8 flex items-center justify-center rounded'>
+                        <svg
+                          width='16'
+                          height='16'
+                          viewBox='0 0 24 24'
+                          fill='none'
+                          xmlns='http://www.w3.org/2000/svg'
+                        >
+                          <path
+                            d='M13 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V9L13 2Z'
+                            stroke='white'
+                            strokeWidth='2'
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                          />
+                        </svg>
+                      </div>
+                      <div className='ml-3'>
+                        <p className='text-sm font-medium'>{selectedFile.name}</p>
+                        <p className='text-xs text-gray-500'>
+                          {selectedFile.size}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={removeFile}
+                      className='text-gray-400 hover:text-gray-600'
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+
+                  {uploadStatus === 'uploading' && (
+                    <>
+                      <div className='w-full bg-gray-200 rounded-full h-1.5'>
+                        <div
+                          className='bg-indigo-500 h-1.5 rounded-full transition-all duration-300'
+                          style={{ width: `${uploadProgress}%` }}
+                        ></div>
+                      </div>
+                      <p className='text-xs text-right text-gray-500 mt-1'>
+                        Uploading... {uploadProgress}%
+                      </p>
+                    </>
+                  )}
+
+                  {uploadStatus === 'success' && (
+                    <p className='text-xs text-green-500 mt-1'>
+                      ✓ Successfully uploaded
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div className='grid grid-cols-2 gap-4'>
+                <button
+                  className='bg-indigo-500 hover:bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium transition-colors'
+                  disabled={!selectedFile || uploadStatus === 'uploading' || isApplying}
+                  onClick={handleUseResume}
+                >
+                  {isApplying ? 'Applying...' : 
+                   uploadStatus === 'uploading' ? 'Uploading...' : 'Use This Resume'}
+                </button>
+                <button
+                  className='border border-indigo-500 text-indigo-500 hover:bg-indigo-50 py-3 px-4 rounded-lg font-medium transition-colors'
+                  onClick={handleCreateNewResume}
+                  disabled={isApplying}
+                >
+                  Create New
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
-    </div>
-  )
+
+      <JobSubmissionPopup 
+        isOpen={showSuccessPopup}
+        onClose={handlePopupClose}
+        illustrationSrc="/success-illustration.png" // Replace with your actual image path
+      />
+    </>
+  );
 }
 
 export default function JobDetails () {

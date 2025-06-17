@@ -27,6 +27,7 @@
     "html-react-parser": "^5.2.3",
     "html2canvas": "^1.4.1",
     "html2pdf.js": "^0.10.3",
+    "inherits": "^2.0.4",
     "install": "^0.13.0",
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.1",
