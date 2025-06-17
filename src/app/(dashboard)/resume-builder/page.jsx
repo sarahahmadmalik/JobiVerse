@@ -41,8 +41,9 @@ import Loader from '@/components/ui/loader'
 import { applicationService } from '@/services/applicant-service'
 import JobSubmissionPopup from '@/components/dashboard/candidate/job-listing/JobSubmissionPopup'
 import confetti from 'canvas-confetti'
+import { Suspense } from 'react';
 
-const ResumeBuilder = () => {
+const ResumeBuilderChild = () => {
   const { data: session } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -1964,4 +1965,10 @@ const ResumeBuilder = () => {
   )
 }
 
-export default ResumeBuilder
+export default function ResumeBuilder() {
+  return (
+    <Suspense fallback={<Loader />}>
+      <ResumeBuilderChild />
+    </Suspense>
+  );
+}

@@ -42,7 +42,7 @@ function RecruiterHomePage() {
         // Transform the data for the InterviewCard component
         const transformedInterviews = interviews.map(interview => ({
           id: interview._id,
-          candidate: interview.candidates?.[0]?.firstName + interview.candidates?.[0]?.lastName,
+          candidate: interview.candidates?.[0]?.firstName + interview.candidates?.[0]?.lastName || interview.candidateIds?.[0]?.firstName + ' ' + interview.candidateIds?.[0]?.lastName|| "Candidate",
           role: interview.jobDetails?.jobTitle || "Position",
           time: formatInterviewTime(interview.startTime),
           type: interview.stage || getInterviewType(interview.jobDetails?.jobTitle),
